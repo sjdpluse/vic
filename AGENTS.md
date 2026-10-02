@@ -6,7 +6,7 @@ This file is mandatory reading for every AI agent and human contributor.
 
 **Business:** VIC PREMIER CONSTRUCTION TEAM  
 **Market:** Melbourne, Victoria, Australia  
-**Product:** Premium cinematic 3D construction / renovation website with CMS and enquiry system.
+**Product:** Premium cinematic construction / renovation website with scroll-driven frame-sequence storytelling, CMS and enquiry system.
 
 ## Non-negotiable product direction
 
@@ -14,15 +14,16 @@ This is not a simple landing page and must not collapse into a conventional temp
 
 The first impression should communicate premium workmanship, architectural sophistication and credibility through composition, motion and real work.
 
-The signature interaction is a scroll-driven 3D house transformation:
+The signature interaction is a scroll-driven house transformation rendered from a pre-produced cinematic master sequence:
 
 1. The house first appears partly aged / weathered / unfinished.
 2. Scroll progress advances renovation/restoration stages.
-3. Ageing, damaged or unfinished visual layers are progressively replaced by clean renewed surfaces and details.
-4. Service storytelling is tied to relevant parts of the transformation where appropriate.
+3. Ageing, damaged or unfinished visual states are progressively replaced by clean renewed surfaces and details.
+4. Service storytelling is tied to relevant transformation beats where appropriate.
 5. The completed state is polished, bright and contemporary.
+6. The production website displays an optimized image sequence on Canvas; the house is not required to be real-time WebGL geometry.
 
-The experience must remain comprehensible when 3D is unavailable or reduced-motion is requested.
+The experience must remain comprehensible when motion is reduced, JavaScript is delayed or frame assets fail to load.
 
 ## Verified business facts
 
@@ -73,17 +74,21 @@ The supplied brand artwork contains the words “BUILDER REGISTRATION”. Treat 
 - The public site must always preserve a clear path to consultation / free quote.
 - Mobile is a first-class experience, not a desktop downgrade.
 
-## 3D rules
+## Frame-sequence rules
 
-- Prefer one exceptional hero/narrative 3D system over many shallow 3D gimmicks.
-- Use React Three Fiber / Three.js unless a better implementation is justified.
-- Use GLTF/GLB assets and production compression.
-- Keep textures and draw calls tightly budgeted.
-- Use progressive loading and a meaningful 2D fallback.
-- The 3D canvas must not block navigation, accessibility or enquiry conversion.
-- Scroll position must map deterministically to animation state.
-- Respect `prefers-reduced-motion` and provide a reduced-motion alternative.
-- Maintain a separate mobile quality/performance profile when required.
+- The cinematic house sequence is the primary transformation engine.
+- The source animation must be designed for scroll beats before export.
+- Use HTML Canvas for efficient frame rendering; do not render hundreds of `<img>` nodes in the DOM.
+- Scroll position must map deterministically to a frame index.
+- Reverse scrolling must reverse the transformation naturally.
+- Do not autoplay the master video as the primary experience.
+- Prefer AVIF for production frames where quality/support is acceptable, with WebP fallback where necessary.
+- Desktop and mobile must use separately composed sequences or separately optimized frame sets when composition demands it.
+- Do not commit large frame sets or master videos to GitHub. Use external object storage/CDN for production assets.
+- Progressive loading is mandatory: poster/current frame first, nearby frames next, remaining frames in chunks.
+- Missing frames/network failures must degrade to a stable poster or representative completed frame without breaking content.
+- Respect `prefers-reduced-motion`: show a stable representative state and expose service/content narrative in normal document flow.
+- The transformation source must preserve the same house identity and camera continuity; visible AI geometry drift, window changes, roof shape morphing or architectural inconsistency is unacceptable.
 
 ## Motion / scrolling
 
@@ -91,6 +96,7 @@ The supplied brand artwork contains the words “BUILDER REGISTRATION”. Treat 
 - A smooth-scroll library may be used only if native navigation, keyboard interaction, anchor links, browser history and reduced-motion remain correct.
 - Do not hijack scrolling or introduce lag for visual effect.
 - Avoid scroll-jacking patterns that trap the user.
+- HTML headings, labels and CTAs remain outside the Canvas and are synchronized to sequence beats.
 
 ## CMS and media
 
@@ -136,8 +142,8 @@ Email notifications should send through a transactional provider; secrets remain
 - Tailwind CSS
 - React Server Components by default
 - Client Components only where required
-- Three.js / React Three Fiber for 3D
-- GSAP for orchestrated motion
+- Canvas-based frame-sequence renderer for the cinematic transformation
+- GSAP ScrollTrigger for orchestrated motion
 - Supabase for auth/data/storage
 - `next/image` for public 2D media
 - semantic HTML and WCAG-conscious interactions
@@ -147,13 +153,14 @@ Email notifications should send through a transactional provider; secrets remain
 ## Engineering rules
 
 - Never commit secrets or customer/project media.
+- Never commit master transformation videos or large production frame sets.
 - Keep privileged Supabase keys server-only.
 - Validate public and admin writes on the server.
 - Use database constraints and RLS for important invariants.
 - Avoid unnecessary dependencies.
-- Do not couple all site sections to WebGL; content should still render if the 3D layer fails.
+- Do not couple all site sections to the sequence engine; core content must still render if the cinematic layer fails.
 - Avoid hydration-heavy architecture for static/editorial sections.
-- Keep runtime errors isolated so failure of 3D does not break the whole page.
+- Keep runtime errors isolated so failure of the sequence renderer does not break the whole page.
 
 ## Workflow
 
