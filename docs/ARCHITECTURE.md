@@ -2,9 +2,9 @@
 
 ## Overview
 
-The product combines an SEO-first public site, one controlled 3D narrative experience, a secure content-management area and a consultation/enquiry pipeline.
+The product combines an SEO-first public site, one controlled cinematic frame-sequence narrative experience, a secure content-management area and a consultation/enquiry pipeline.
 
-The architecture should isolate the WebGL experience from core navigation and content so a 3D failure never takes down the public site.
+The architecture must isolate the cinematic sequence from core navigation and content so asset/network/runtime failure never takes down the public site.
 
 ## Application
 
@@ -14,32 +14,80 @@ The architecture should isolate the WebGL experience from core navigation and co
 - React Server Components for static/editorial/public content where possible
 - Client Components only for interactive systems
 
-## 3D and motion
+## Cinematic transformation and motion
 
 Preferred stack:
 
-- `three`
-- `@react-three/fiber`
-- `@react-three/drei` where justified
+- HTML Canvas for frame rendering
 - `gsap`
 - `ScrollTrigger`
 - optional `lenis` only after accessibility/native-navigation validation
 
-### 3D delivery
+### Sequence source
 
-Use GLTF/GLB assets.
+The source animation is produced externally as a cinematic renovation/restoration master. It may be created using AI video, compositing, 3D rendering, motion design or a hybrid workflow, but the final architectural identity and camera continuity must be reviewed before web integration.
 
-Preferred optimisation pipeline:
-- clean geometry in Blender or equivalent
-- remove invisible/internal geometry
-- merge static meshes where useful
-- reduce material count
-- Draco/Meshopt geometry compression where appropriate
-- KTX2/Basis texture compression where appropriate
-- texture-size tiers for desktop/mobile
-- precompute only what materially improves runtime performance
+The master is then exported into optimized frame sets.
 
-The site should provide an image/video fallback for unsupported or low-capability devices.
+Preferred delivery formats:
+- AVIF primary where supported/quality is acceptable
+- WebP fallback where needed
+- separate desktop and mobile variants
+
+### Rendering model
+
+A single Canvas displays the active frame.
+
+Scroll progress maps to a normalized value from 0 to 1, which maps deterministically to a frame index. Reverse scrolling selects earlier frames naturally.
+
+HTML content remains outside the Canvas:
+- headings
+- service labels
+- body copy
+- CTAs
+- navigation
+
+This preserves semantic content, accessibility and SEO independently of the cinematic layer.
+
+### Preloading strategy
+
+Do not preload the full sequence before rendering useful content.
+
+Expected loading order:
+1. poster/representative frame
+2. initial and nearby frames
+3. forward/backward chunks around current progress
+4. remaining frames opportunistically
+
+Use bounded concurrency and memory-aware caching. The renderer must tolerate missing frames and fall back to the nearest loaded frame or poster rather than flashing blank content.
+
+### Asset hosting
+
+Large production frame sequences and master videos do not belong in GitHub.
+
+Use external object storage/CDN. The exact provider may be Supabase Storage or a dedicated CDN/object-storage service after performance testing.
+
+Static brand assets and small prototype placeholders may live in Git when reasonable.
+
+### Mobile
+
+Mobile is a separate quality profile.
+
+Potential differences:
+- separately composed master/crop
+- lower pixel dimensions
+- fewer frames
+- shorter scroll range
+- reduced prefetch radius
+- stable poster fallback on low-memory/slow-network conditions
+
+Do not simply force the desktop sequence onto every mobile device.
+
+### Reduced motion and failure fallback
+
+With `prefers-reduced-motion`, disable continuous scrubbing and display a stable representative frame while the narrative content renders in normal document flow.
+
+If Canvas or sequence loading fails, the same stable fallback must remain visible and the rest of the website must continue functioning.
 
 ## Public content / CMS
 
@@ -123,7 +171,7 @@ Marketing UI uses deliberate icon/label actions. Phone/email values remain in a 
 
 ## SEO
 
-3D must not replace semantic content.
+The cinematic sequence must not replace semantic content.
 
 Requirements:
 - crawlable headings/body/service content
@@ -137,12 +185,12 @@ Requirements:
 
 The base site should remain usable with:
 - JavaScript delayed
-- WebGL unavailable
+- frame assets unavailable
 - reduced motion enabled
 - slow network
 - mobile low-power mode
 
-The 3D layer is an enhancement to the core marketing narrative, even though it is a signature visual feature.
+The cinematic layer is an enhancement to the core marketing narrative, even though it is a signature visual feature.
 
 ## Observability / quality gates
 
@@ -152,7 +200,8 @@ Before launch:
 - production build
 - accessibility review
 - mobile device testing
-- WebGL fallback testing
+- frame-sequence failure/fallback testing
+- preload/memory testing
 - form/upload abuse testing
 - Lighthouse/Core Web Vitals review
 - error monitoring provider decision
