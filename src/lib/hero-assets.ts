@@ -26,15 +26,13 @@ export type HeroManifest = {
 };
 
 const LOCAL_MANIFEST_URL = "/frames/manifest.json";
+const DEFAULT_EXTERNAL_BASE_URL =
+  "https://jemyrlzpsmtpveulrhgi.supabase.co/storage/v1/object/public/hero-assets/hero/v1";
 const rawBaseUrl = process.env.NEXT_PUBLIC_HERO_SEQUENCE_BASE_URL?.trim();
 
-export const HERO_SEQUENCE_BASE_URL = rawBaseUrl
-  ? rawBaseUrl.replace(/\/+$/, "")
-  : null;
+export const HERO_SEQUENCE_BASE_URL = (rawBaseUrl || DEFAULT_EXTERNAL_BASE_URL).replace(/\/+$/, "");
 
-export const HERO_MANIFEST_URL = HERO_SEQUENCE_BASE_URL
-  ? `${HERO_SEQUENCE_BASE_URL}/manifest.json`
-  : LOCAL_MANIFEST_URL;
+export const HERO_MANIFEST_URL = `${HERO_SEQUENCE_BASE_URL}/manifest.json`;
 
 function resolveAgainstBase(value: string, baseUrl: string | null) {
   if (/^https?:\/\//i.test(value) || !baseUrl) return value;
@@ -90,17 +88,14 @@ export function frameSourceCandidates(frame: HeroFrame) {
 }
 
 export async function fetchHeroManifest(signal?: AbortSignal): Promise<HeroManifest> {
-  const urls = HERO_SEQUENCE_BASE_URL
-    ? [HERO_MANIFEST_URL, LOCAL_MANIFEST_URL]
-    : [LOCAL_MANIFEST_URL];
-
+  const urls = [HERO_MANIFEST_URL, LOCAL_MANIFEST_URL];
   let lastError: unknown;
 
   for (const url of urls) {
     try {
       const response = await fetch(url, {
         signal,
-        cache: HERO_SEQUENCE_BASE_URL && url === HERO_MANIFEST_URL ? "force-cache" : "default",
+        cache: url === HERO_MANIFEST_URL ? "force-cache" : "default",
       });
 
       if (!response.ok) {
@@ -108,9 +103,7 @@ export async function fetchHeroManifest(signal?: AbortSignal): Promise<HeroManif
       }
 
       const manifest = (await response.json()) as HeroManifest;
-      const baseUrl = HERO_SEQUENCE_BASE_URL && url === HERO_MANIFEST_URL
-        ? HERO_SEQUENCE_BASE_URL
-        : null;
+      const baseUrl = url === HERO_MANIFEST_URL ? HERO_SEQUENCE_BASE_URL : null;
 
       return normalizeManifest(manifest, baseUrl);
     } catch (error) {
