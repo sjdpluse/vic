@@ -57,8 +57,10 @@ export function HeroSequence() {
   const queuedRef = useRef(new Set<number>());
   const queueRef = useRef<number[]>([]);
   const runningRef = useRef(0);
-  const desiredRef = useRef(0);
   const desiredPositionRef = useRef(0);
+  const renderedPositionRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const previousTimestampRef = useRef<number | null>(null);
   const profileRef = useRef<HeroProfile | null>(null);
   const [manifest, setManifest] = useState<HeroManifest | null>(null);
   const [activeBeat, setActiveBeat] = useState(0);
@@ -75,32 +77,15 @@ export function HeroSequence() {
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) return;
 
-    const lower = Math.max(0, Math.floor(position));
-    const upper = Math.min(profile.frameCount - 1, Math.ceil(position));
-    const fraction = position - lower;
-    const lowerImage = loadedRef.current.get(lower);
-    const upperImage = loadedRef.current.get(upper);
-
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = "high";
-
-    if (lowerImage && upperImage && lower !== upper) {
-      context.globalAlpha = 1;
-      context.drawImage(lowerImage, 0, 0, canvas.width, canvas.height);
-      context.globalAlpha = fraction;
-      context.drawImage(upperImage, 0, 0, canvas.width, canvas.height);
-      context.globalAlpha = 1;
-      setCanvasReady(true);
-      return;
-    }
-
-    const requested = Math.round(position);
+    const requested = Math.max(0, Math.min(profile.frameCount - 1, Math.round(position)));
     const index = nearestLoaded(requested, loadedRef.current, profile.frameCount);
     if (index === null) return;
 
     const image = loadedRef.current.get(index);
     if (!image) return;
 
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
     context.globalAlpha = 1;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     setCanvasReady(true);
@@ -110,7 +95,7 @@ export function HeroSequence() {
     const profile = profileRef.current;
     if (!profile) return;
 
-    while (runningRef.current < 6 && queueRef.current.length > 0) {
+    while (runningRef.current < 8 && queueRef.current.length > 0) {
       const index = queueRef.current.shift();
       if (index === undefined || loadedRef.current.has(index)) continue;
 
@@ -120,11 +105,15 @@ export function HeroSequence() {
 
       if (reusedImage) {
         loadedRef.current.set(index, reusedImage);
-        drawPosition(desiredPositionRef.current);
+        queuedRef.current.delete(index);
+        drawPosition(renderedPositionRef.current);
         continue;
       }
 
-      if (candidates.length === 0) continue;
+      if (candidates.length === 0) {
+        queuedRef.current.delete(index);
+        continue;
+      }
 
       runningRef.current += 1;
       let candidateIndex = 0;
@@ -141,11 +130,12 @@ export function HeroSequence() {
         for (let frameIndex = 0; frameIndex < profile.frames.length; frameIndex += 1) {
           if (frameCacheKey(profile, frameIndex) === cacheKey) {
             loadedRef.current.set(frameIndex, image);
+            queuedRef.current.delete(frameIndex);
           }
         }
 
         runningRef.current -= 1;
-        drawPosition(desiredPositionRef.current);
+        drawPosition(renderedPositionRef.current);
         pumpQueue();
       };
 
@@ -156,6 +146,7 @@ export function HeroSequence() {
           return;
         }
 
+        queuedRef.current.delete(index);
         runningRef.current -= 1;
         pumpQueue();
       };
@@ -182,18 +173,35 @@ export function HeroSequence() {
       const profile = profileRef.current;
       if (!profile) return;
 
-      const lower = Math.floor(position);
-      const upper = Math.ceil(position);
-      enqueue(lower, true);
-      enqueue(upper, true);
-
       const center = Math.round(position);
+      enqueue(center, true);
+
       for (let distance = 1; distance <= profile.preloadRadius; distance += 1) {
-        enqueue(center + distance, distance <= 3);
-        enqueue(center - distance, distance <= 3);
+        enqueue(center + distance, distance <= 5);
+        enqueue(center - distance, distance <= 5);
       }
     },
     [enqueue],
+  );
+
+  const preloadCorridor = useCallback(
+    (from: number, to: number) => {
+      const profile = profileRef.current;
+      if (!profile) return;
+
+      const start = Math.round(from);
+      const end = Math.round(to);
+      const direction = end >= start ? 1 : -1;
+      const distance = Math.abs(end - start);
+      const limit = Math.min(distance, 32);
+
+      for (let step = 0; step <= limit; step += 1) {
+        enqueue(start + step * direction, true);
+      }
+
+      preloadAround(to);
+    },
+    [enqueue, preloadAround],
   );
 
   useEffect(() => {
@@ -233,9 +241,10 @@ export function HeroSequence() {
       queueRef.current = [];
       runningRef.current = 0;
       profileRef.current = profile;
-      desiredRef.current = Math.round(initialPosition);
       desiredPositionRef.current = initialPosition;
-      enqueue(desiredRef.current, true);
+      renderedPositionRef.current = initialPosition;
+      previousTimestampRef.current = null;
+      enqueue(Math.round(initialPosition), true);
       enqueue(profile.frameCount - 1, true);
       preloadAround(initialPosition);
     };
@@ -263,16 +272,49 @@ export function HeroSequence() {
     const copy = copyRef.current;
     if (!section || !stage || !copy) return;
 
+    let disposed = false;
+
+    const renderLoop = (timestamp: number) => {
+      if (disposed) return;
+
+      const profile = profileRef.current;
+      if (profile) {
+        const previousTimestamp = previousTimestampRef.current ?? timestamp;
+        const deltaMs = Math.min(50, Math.max(0, timestamp - previousTimestamp));
+        previousTimestampRef.current = timestamp;
+
+        const current = renderedPositionRef.current;
+        const target = desiredPositionRef.current;
+        const difference = target - current;
+
+        if (Math.abs(difference) > 0.01) {
+          const response = 1 - Math.exp(-deltaMs / 62);
+          const unconstrainedStep = difference * response;
+          const maxStep = deltaMs * 0.34;
+          const step = Math.max(-maxStep, Math.min(maxStep, unconstrainedStep));
+          const next = Math.max(0, Math.min(profile.frameCount - 1, current + step));
+
+          renderedPositionRef.current = Math.abs(target - next) < 0.035 ? target : next;
+          preloadCorridor(current, target);
+          drawPosition(renderedPositionRef.current);
+        } else {
+          renderedPositionRef.current = target;
+          drawPosition(target);
+        }
+      }
+
+      animationFrameRef.current = window.requestAnimationFrame(renderLoop);
+    };
+
+    animationFrameRef.current = window.requestAnimationFrame(renderLoop);
+
     const updateProgress = (progress: number) => {
       const profile = profileRef.current;
       if (!profile) return;
 
       const position = progress * (profile.frameCount - 1);
-      const requested = Math.round(position);
-      desiredRef.current = requested;
       desiredPositionRef.current = position;
-      preloadAround(position);
-      drawPosition(position);
+      preloadCorridor(renderedPositionRef.current, position);
 
       const nextBeat = beatIndex(progress);
       setActiveBeat((current) => (current === nextBeat ? current : nextBeat));
@@ -291,7 +333,7 @@ export function HeroSequence() {
       trigger: section,
       start: "top top",
       end: "bottom bottom",
-      scrub: 0.18,
+      scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => updateProgress(self.progress),
     });
@@ -302,18 +344,24 @@ export function HeroSequence() {
       for (let index = 0; index < profile.frameCount; index += 1) enqueue(index);
     };
 
+    const preloadDelay = window.matchMedia("(max-width: 767px)").matches ? 450 : 220;
     const idleId = window.requestIdleCallback
-      ? window.requestIdleCallback(scheduleBackgroundPreload, { timeout: 1200 })
-      : window.setTimeout(scheduleBackgroundPreload, 500);
+      ? window.requestIdleCallback(scheduleBackgroundPreload, { timeout: 800 })
+      : window.setTimeout(scheduleBackgroundPreload, preloadDelay);
 
     return () => {
+      disposed = true;
       trigger.kill();
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
       if (typeof idleId === "number") {
         if (window.cancelIdleCallback) window.cancelIdleCallback(idleId);
         else window.clearTimeout(idleId);
       }
     };
-  }, [drawPosition, enqueue, manifest, preloadAround, reducedMotion]);
+  }, [drawPosition, enqueue, manifest, preloadCorridor, reducedMotion]);
 
   return (
     <section
