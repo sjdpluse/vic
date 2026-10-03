@@ -323,7 +323,10 @@ export function HeroSequence() {
       className="hero"
       ref={sectionRef}
       aria-labelledby="hero-title"
-      style={{ background: "#7dafca" }}
+      style={{
+        background:
+          "linear-gradient(180deg, #7dafca 0%, #7dafca 52%, #dce6e5 70%, #f5f3ed 82%, #f5f3ed 100%)",
+      }}
     >
       <header className="site-header">
         <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
