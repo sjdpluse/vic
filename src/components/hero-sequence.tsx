@@ -235,8 +235,12 @@ export function HeroSequence() {
       const nextBeat = beatIndex(progress);
       setActiveBeat((current) => (current === nextBeat ? current : nextBeat));
 
-      const rise = gsap.utils.interpolate(12, -18, progress);
-      const scale = gsap.utils.interpolate(0.94, 1.035, progress);
+      // The section itself moves upward with normal document scroll. A positive
+      // stage offset toward the end counterbalances part of that travel so the
+      // renewed house remains in view until the next section arrives instead
+      // of leaving a dead blank band at the bottom of the hero.
+      const rise = gsap.utils.interpolate(8, 48, progress);
+      const scale = gsap.utils.interpolate(0.96, 1.015, progress);
       gsap.set(stage, { y: `${rise}svh`, xPercent: -50, scale });
 
       const copyFade = progress < 0.52 ? 1 : Math.max(0, 1 - (progress - 0.52) / 0.3);
