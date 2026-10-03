@@ -1,0 +1,37 @@
+name: Prototype checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "tsconfig.json"
+      - "next.config.mjs"
+      - "postcss.config.mjs"
+      - "eslint.config.mjs"
+      - "scripts/**"
+      - "src/**"
+      - "docs/PROTOTYPE-HERO.md"
+      - ".github/workflows/prototype-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Strict type-check
+        run: npm run type-check
+      - name: Production build
+        run: npm run build
