@@ -325,7 +325,7 @@ export function HeroSequence() {
       aria-labelledby="hero-title"
       style={{
         background:
-          "linear-gradient(180deg, #7dafca 0%, #a9d2ee 25%, #dce9ea 45%, #f5f3ed 68%, #f5f3ed 100%)",
+          "linear-gradient(180deg, #7dafca 0%, #7dafca 52%, #dce6e5 70%, #f5f3ed 82%, #f5f3ed 100%)",
       }}
     >
       <header className="site-header">
@@ -333,12 +333,14 @@ export function HeroSequence() {
           <span>VIC PREMIER</span>
           <small>CONSTRUCTION TEAM</small>
         </a>
-        <nav aria-label="Primary prototype navigation">
-          <a href="#capabilities">Services</a>
-          <a href="#consultation">Consultation</a>
+        <nav aria-label="Primary navigation">
+          <a href="#about">About</a>
+          <a href="#services">Services</a>
+          <a href="#projects">Projects</a>
+          <a href="#process">Process</a>
         </nav>
         <a className="icon-cta" href="#consultation">
-          <span>Request a quote</span>
+          <span>Free quote</span>
           <span aria-hidden="true">↗</span>
         </a>
       </header>
@@ -351,7 +353,7 @@ export function HeroSequence() {
           <em>Restore.</em>
         </h1>
         <p className="hero__lede">
-          A cinematic study of an existing property moving toward a clean renewed finish.
+          Residential and commercial work shaped around the property, the scope and the finish.
         </p>
         <a className="hero__cta" href="#consultation">
           Request a free quote <span aria-hidden="true">↗</span>
