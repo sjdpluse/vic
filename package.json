@@ -1,0 +1,30 @@
+{
+  "name": "vic-premier-cinematic-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run prepare:frames && next dev",
+    "prepare:frames": "node scripts/prepare-prototype-frames.mjs",
+    "prebuild": "npm run prepare:frames",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "gsap": "3.13.0",
+    "next": "15.5.27",
+    "react": "19.1.2",
+    "react-dom": "19.1.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.13",
+    "@types/node": "24.5.2",
+    "@types/react": "19.1.13",
+    "@types/react-dom": "19.1.9",
+    "eslint": "9.36.0",
+    "eslint-config-next": "15.5.27",
+    "tailwindcss": "4.1.13",
+    "typescript": "5.9.2"
+  }
+}

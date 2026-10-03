@@ -1,0 +1,19 @@
+# Generated hero-sequence artifacts
+artifacts/
+public/frames/
+
+# Next.js / Node
+.next/
+out/
+node_modules/
+*.tsbuildinfo
+npm-debug.log*
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
