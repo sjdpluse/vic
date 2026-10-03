@@ -4,7 +4,7 @@
   --ink: #141414;
   --muted: #5f6265;
   --paper: #f5f3ed;
-  --blue: #73bbf3;
+  --blue: #79accb;
   --brand: #f0041c;
   --line: rgb(20 20 20 / 18%);
 }
@@ -45,7 +45,7 @@ button:focus-visible {
   min-height: 1040px;
   overflow: clip;
   isolation: isolate;
-  background: linear-gradient(180deg, #73bbf3 0%, #a9d2ee 25%, #dce9ea 45%, #f5f3ed 68%, #f5f3ed 100%);
+  background: linear-gradient(180deg, #79accb 0%, #a9d2ee 25%, #dce9ea 45%, #f5f3ed 68%, #f5f3ed 100%);
 }
 
 .site-header {
