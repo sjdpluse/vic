@@ -1,0 +1,10 @@
+# Generated hero-sequence artifacts
+artifacts/
+
+# Node tooling
+node_modules/
+npm-debug.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
