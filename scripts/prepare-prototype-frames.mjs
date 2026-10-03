@@ -27,8 +27,13 @@ await fs.rm(outputRoot, { recursive: true, force: true });
 await fs.mkdir(desktopDir, { recursive: true });
 await fs.mkdir(mobileDir, { recursive: true });
 
+// Keep every source-frame position in the desktop timeline so scroll motion
+// matches the original 240-frame export. Exact consecutive duplicates reuse
+// the same physical JPG instead of writing/downloading duplicate bytes.
 const unique = [];
+const desktopFrames = [];
 let previousHash = null;
+let previousDesktopSrc = null;
 
 for (let index = 0; index < files.length; index += 1) {
   const sourceName = files[index];
@@ -36,27 +41,27 @@ for (let index = 0; index < files.length; index += 1) {
   const buffer = await fs.readFile(sourcePath);
   const currentHash = hash(buffer);
 
-  if (currentHash === previousHash) continue;
+  if (currentHash !== previousHash || !previousDesktopSrc) {
+    const name = `frame-${String(unique.length + 1).padStart(4, "0")}.jpg`;
+    await fs.writeFile(path.join(desktopDir, name), buffer);
+    previousDesktopSrc = `/frames/desktop/${name}`;
 
-  unique.push({
-    sourceName,
-    sourceFrame: frameNumber(sourceName),
-    sourceOrdinal: index + 1,
-    buffer,
-  });
-  previousHash = currentHash;
-}
+    unique.push({
+      sourceName,
+      sourceFrame: frameNumber(sourceName),
+      sourceOrdinal: index + 1,
+      buffer,
+    });
+  }
 
-const desktopFrames = [];
-for (let index = 0; index < unique.length; index += 1) {
-  const name = `frame-${String(index + 1).padStart(4, "0")}.jpg`;
-  await fs.writeFile(path.join(desktopDir, name), unique[index].buffer);
   desktopFrames.push({
     index,
-    src: `/frames/desktop/${name}`,
-    sourceFrame: unique[index].sourceFrame,
-    sourceOrdinal: unique[index].sourceOrdinal,
+    src: previousDesktopSrc,
+    sourceFrame: frameNumber(sourceName),
+    sourceOrdinal: index + 1,
   });
+
+  previousHash = currentHash;
 }
 
 const mobileSourceIndexes = unique
@@ -83,14 +88,15 @@ const manifest = {
     format: "jpg-prototype",
     inputFrameCount: files.length,
     uniqueConsecutiveFrameCount: unique.length,
-    duplicatesRemoved: files.length - unique.length,
+    duplicatesReused: files.length - unique.length,
     dimensions: { width: 1280, height: 720 },
   },
   profiles: {
     desktop: {
       frameCount: desktopFrames.length,
-      preloadRadius: 10,
+      preloadRadius: 18,
       frames: desktopFrames,
+      note: "Full source timing is preserved. Exact consecutive duplicate frames reuse the same JPG URL rather than duplicate bytes.",
     },
     mobile: {
       frameCount: mobileFrames.length,
@@ -108,5 +114,5 @@ await fs.writeFile(
 );
 
 console.log(
-  `Prepared ${desktopFrames.length} desktop frames and ${mobileFrames.length} mobile prototype frames from ${files.length} JPG sources.`,
+  `Prepared ${desktopFrames.length} desktop timeline frames backed by ${unique.length} unique JPGs, plus ${mobileFrames.length} mobile prototype frames from ${files.length} sources.`,
 );
