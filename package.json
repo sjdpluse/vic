@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm run prepare:frames && next dev",
+    "dev": "next dev",
+    "dev:local-frames": "npm run prepare:frames && next dev",
     "prepare:frames": "node scripts/prepare-prototype-frames.mjs",
-    "prebuild": "npm run prepare:frames",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
