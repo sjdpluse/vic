@@ -235,10 +235,9 @@ export function HeroSequence() {
       const nextBeat = beatIndex(progress);
       setActiveBeat((current) => (current === nextBeat ? current : nextBeat));
 
-      // The section itself moves upward with normal document scroll. A positive
-      // stage offset toward the end counterbalances part of that travel so the
-      // renewed house remains in view until the next section arrives instead
-      // of leaving a dead blank band at the bottom of the hero.
+      // Normal document scroll already moves the hero upward. Counterbalancing
+      // part of that travel keeps the renewed house in-frame until the content
+      // handoff, while the net screen-space motion still rises substantially.
       const rise = gsap.utils.interpolate(8, 48, progress);
       const scale = gsap.utils.interpolate(0.96, 1.015, progress);
       gsap.set(stage, { y: `${rise}svh`, xPercent: -50, scale });
@@ -309,7 +308,20 @@ export function HeroSequence() {
         </a>
       </div>
 
-      <div className="hero__stage" ref={stageRef} data-profile={profileName}>
+      <div
+        className="hero__stage"
+        ref={stageRef}
+        data-profile={profileName}
+        style={{
+          top: "18svh",
+          width: "104vw",
+          maxWidth: "none",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, black 8%, black 84%, transparent 100%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, black 8%, black 84%, transparent 100%)",
+        }}
+      >
         <img className="hero__poster" src={fallbackSrc} alt="" aria-hidden="true" />
         <canvas
           className={canvasReady ? "hero__canvas hero__canvas--ready" : "hero__canvas"}
