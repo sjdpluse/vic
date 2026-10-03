@@ -1,0 +1,92 @@
+name: Verify external hero delivery
+
+on:
+  push:
+    branches: [feat/production-hero-assets]
+    paths:
+      - ".github/workflows/verify-external-hero.yml"
+      - "src/lib/hero-assets.ts"
+      - "tools/hero-assets/runtime-manifest.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: https://jemyrlzpsmtpveulrhgi.supabase.co/storage/v1/object/public/hero-assets/hero/v1
+
+    steps:
+      - name: Fetch and validate runtime manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            -D /tmp/manifest-headers.txt \
+            "$BASE_URL/manifest.json" \
+            -o /tmp/manifest.json
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('/tmp/manifest.json', 'utf8'));
+          for (const profileName of ['desktop', 'mobile']) {
+            const profile = manifest.profiles?.[profileName];
+            if (!profile) throw new Error(`Missing ${profileName} profile`);
+            if (profile.frameCount !== 240) throw new Error(`${profileName} frameCount=${profile.frameCount}, expected 240`);
+            if (profile.frames.length !== 240) throw new Error(`${profileName} frames.length=${profile.frames.length}, expected 240`);
+            for (const index of [0, 119, 239]) {
+              const frame = profile.frames[index];
+              if (!frame?.sources?.avif || !frame?.sources?.webp) {
+                throw new Error(`Missing AVIF/WebP sources for ${profileName} frame ${index}`);
+              }
+            }
+          }
+          console.log('Runtime manifest: valid 240-position desktop/mobile profiles');
+          NODE
+
+      - name: Verify representative AVIF and WebP objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE' >/tmp/sample-paths.txt
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('/tmp/manifest.json', 'utf8'));
+          for (const profileName of ['desktop', 'mobile']) {
+            for (const index of [0, 119, 239]) {
+              const frame = manifest.profiles[profileName].frames[index];
+              console.log(`${frame.sources.avif}|image/avif`);
+              console.log(`${frame.sources.webp}|image/webp`);
+            }
+          }
+          NODE
+
+          while IFS='|' read -r path expected_type; do
+            headers=$(mktemp)
+            body=$(mktemp)
+            curl --fail-with-body --silent --show-error \
+              -D "$headers" \
+              "$BASE_URL/$path" \
+              -o "$body"
+            size=$(wc -c < "$body")
+            type=$(awk -F': ' 'tolower($1)=="content-type" {gsub("\r", "", $2); print tolower($2)}' "$headers" | tail -1)
+            if [ "$size" -le 0 ]; then
+              echo "Empty response for $path" >&2
+              exit 1
+            fi
+            case "$type" in
+              "$expected_type"*) ;;
+              *) echo "Unexpected Content-Type for $path: $type" >&2; exit 1 ;;
+            esac
+            echo "OK $path ($type, ${size} bytes)"
+          done < /tmp/sample-paths.txt
+
+      - name: Verify public access without API key
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            "$BASE_URL/manifest.json" >/dev/null
+          echo "Public hero origin is reachable without credentials."
