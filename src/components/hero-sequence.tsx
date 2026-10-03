@@ -363,8 +363,6 @@ export function HeroSequence() {
       const nextBeat = beatIndex(progress);
       setActiveBeat((current) => (current === nextBeat ? current : nextBeat));
 
-      // The viewport is sticky now, so stage motion can be literal rather than compensating
-      // for the document scroll. Start slightly low and rise gently into place.
       const rise = gsap.utils.interpolate(8, 0, progress);
       const scale = gsap.utils.interpolate(0.96, 1.015, progress);
       gsap.set(stage, { y: `${rise}svh`, xPercent: -50, scale });
@@ -409,11 +407,14 @@ export function HeroSequence() {
     };
   }, [drawPosition, enqueue, manifest, preloadCorridor, profileName, reducedMotion]);
 
+  // Page travel and frame playback are intentionally decoupled: the shorter track lets
+  // the document move at a more natural pace while the rAF renderer keeps the same
+  // bounded frame velocity and easing as the smoother version.
   const scrollTrackHeight = reducedMotion
     ? "112svh"
     : profileName === "mobile"
-      ? "700svh"
-      : "620svh";
+      ? "520svh"
+      : "440svh";
 
   return (
     <section
@@ -435,6 +436,9 @@ export function HeroSequence() {
           height: reducedMotion ? "112svh" : "100svh",
           overflow: "clip",
           isolation: "isolate",
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
           background:
             "linear-gradient(180deg, #7dafca 0%, #7dafca 52%, #dce6e5 70%, #f5f3ed 82%, #f5f3ed 100%)",
         }}
