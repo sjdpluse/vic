@@ -3,29 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-type Frame = {
-  index: number;
-  src: string;
-  sourceFrame: number;
-  sourceOrdinal: number;
-};
-
-type Profile = {
-  frameCount: number;
-  preloadRadius: number;
-  frames: Frame[];
-};
-
-type FrameManifest = {
-  source: {
-    dimensions: { width: number; height: number };
-  };
-  profiles: {
-    desktop: Profile;
-    mobile: Profile;
-  };
-};
+import {
+  fetchHeroManifest,
+  frameSourceCandidates,
+  type HeroManifest,
+  type HeroProfile,
+} from "@/lib/hero-assets";
 
 const beats = [
   { at: 0, label: "Existing condition" },
@@ -60,6 +43,10 @@ function nearestLoaded(
   return null;
 }
 
+function frameCacheKey(profile: HeroProfile, index: number) {
+  return frameSourceCandidates(profile.frames[index]).join("|");
+}
+
 export function HeroSequence() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -72,8 +59,8 @@ export function HeroSequence() {
   const runningRef = useRef(0);
   const desiredRef = useRef(0);
   const desiredPositionRef = useRef(0);
-  const profileRef = useRef<Profile | null>(null);
-  const [manifest, setManifest] = useState<FrameManifest | null>(null);
+  const profileRef = useRef<HeroProfile | null>(null);
+  const [manifest, setManifest] = useState<HeroManifest | null>(null);
   const [activeBeat, setActiveBeat] = useState(0);
   const [canvasReady, setCanvasReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -127,23 +114,32 @@ export function HeroSequence() {
       const index = queueRef.current.shift();
       if (index === undefined || loadedRef.current.has(index)) continue;
 
-      const src = profile.frames[index].src;
-      const reusedImage = loadedBySrcRef.current.get(src);
+      const candidates = frameSourceCandidates(profile.frames[index]);
+      const cacheKey = frameCacheKey(profile, index);
+      const reusedImage = loadedBySrcRef.current.get(cacheKey);
+
       if (reusedImage) {
         loadedRef.current.set(index, reusedImage);
         drawPosition(desiredPositionRef.current);
         continue;
       }
 
+      if (candidates.length === 0) continue;
+
       runningRef.current += 1;
+      let candidateIndex = 0;
       const image = new Image();
       image.decoding = "async";
-      image.src = src;
+
+      const loadCandidate = () => {
+        image.src = candidates[candidateIndex];
+      };
+
       image.onload = () => {
-        loadedBySrcRef.current.set(src, image);
+        loadedBySrcRef.current.set(cacheKey, image);
 
         for (let frameIndex = 0; frameIndex < profile.frames.length; frameIndex += 1) {
-          if (profile.frames[frameIndex].src === src) {
+          if (frameCacheKey(profile, frameIndex) === cacheKey) {
             loadedRef.current.set(frameIndex, image);
           }
         }
@@ -152,10 +148,19 @@ export function HeroSequence() {
         drawPosition(desiredPositionRef.current);
         pumpQueue();
       };
+
       image.onerror = () => {
+        candidateIndex += 1;
+        if (candidateIndex < candidates.length) {
+          loadCandidate();
+          return;
+        }
+
         runningRef.current -= 1;
         pumpQueue();
       };
+
+      loadCandidate();
     }
   }, [drawPosition]);
 
@@ -192,23 +197,15 @@ export function HeroSequence() {
   );
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
-    async function loadManifest() {
-      const response = await fetch("/frames/manifest.json");
-      if (!response.ok) throw new Error("Hero frame manifest could not be loaded");
-      const nextManifest = (await response.json()) as FrameManifest;
-      if (cancelled) return;
-      setManifest(nextManifest);
-    }
+    fetchHeroManifest(controller.signal)
+      .then(setManifest)
+      .catch(() => {
+        // Stable poster remains visible; core homepage content is unaffected.
+      });
 
-    loadManifest().catch(() => {
-      // Poster fallback remains visible; the rest of the page stays usable.
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -221,14 +218,14 @@ export function HeroSequence() {
       const nextProfileName = mobileQuery.matches ? "mobile" : "desktop";
       const profile = manifest.profiles[nextProfileName];
       const initialPosition = reduceQuery.matches ? profile.frameCount - 1 : 0;
+      const initialFrame = profile.frames[Math.round(initialPosition)];
+      const posterCandidate = initialFrame
+        ? frameSourceCandidates(initialFrame)[0]
+        : undefined;
 
       setProfileName(nextProfileName);
       setReducedMotion(reduceQuery.matches);
-      setFallbackSrc(
-        reduceQuery.matches
-          ? profile.frames[profile.frameCount - 1].src
-          : profile.frames[0].src,
-      );
+      if (posterCandidate) setFallbackSrc(posterCandidate);
 
       loadedRef.current.clear();
       loadedBySrcRef.current.clear();
