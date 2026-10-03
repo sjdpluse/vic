@@ -1,6 +1,8 @@
 import { HeroSequence } from "@/components/hero-sequence";
 import { getPublishedProjects, projectCover } from "@/lib/projects";
 
+export const dynamic = "force-dynamic";
+
 const services = [
   {
     index: "01",
@@ -133,11 +135,48 @@ export default async function Home() {
                   : "project-frame--wide";
 
               return (
-                <article className={`project-frame project-frame--live ${shapeClass}`} key={project.id}>
-                  {cover ? <img src={cover.src} alt={cover.alt} loading="lazy" /> : null}
-                  <div className="project-frame__overlay">
-                    <span>{project.title}</span>
-                    {project.summary ? <small>{project.summary}</small> : null}
+                <article
+                  className={`project-frame project-frame--live ${shapeClass}`}
+                  key={project.id}
+                  style={{ padding: 0, background: "#d7d4cc" }}
+                >
+                  {cover ? (
+                    <img
+                      src={cover.src}
+                      alt={cover.alt}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                        zIndex: 0,
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="project-frame__overlay"
+                    style={{
+                      position: "absolute",
+                      inset: "auto 0 0 0",
+                      zIndex: 2,
+                      display: "grid",
+                      gap: 10,
+                      padding: "clamp(22px, 3vw, 42px)",
+                      color: "#fff",
+                      background:
+                        "linear-gradient(180deg, rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 70%) 100%)",
+                    }}
+                  >
+                    <span style={{ color: "inherit" }}>{project.title}</span>
+                    {project.summary ? (
+                      <small style={{ color: "rgb(255 255 255 / 82%)", justifySelf: "start" }}>
+                        {project.summary}
+                      </small>
+                    ) : null}
                   </div>
                 </article>
               );
