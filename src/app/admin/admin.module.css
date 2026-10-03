@@ -1,0 +1,205 @@
+.shell,
+.dashboard {
+  min-height: 100svh;
+  background: #10100f;
+  color: #f5f3ed;
+  padding: 32px;
+}
+
+.shell {
+  display: grid;
+  place-items: center;
+}
+
+.dashboard {
+  padding: 40px clamp(20px, 4vw, 64px) 72px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  border-bottom: 1px solid rgba(245, 243, 237, 0.16);
+  padding-bottom: 24px;
+}
+
+.header h1,
+.card h1,
+.card h2,
+.projectCard h2 {
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.header h1,
+.card h1 {
+  font-size: clamp(2.6rem, 6vw, 5.6rem);
+}
+
+.card h2,
+.projectCard h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2.4rem);
+}
+
+.eyebrow,
+.status,
+.slug,
+.account small {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.card {
+  width: min(100%, 620px);
+  background: #f5f3ed;
+  color: #171715;
+  padding: clamp(24px, 4vw, 48px);
+  border-radius: 2px;
+}
+
+.card p,
+.projectCard p {
+  line-height: 1.65;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.form label,
+.upload {
+  display: grid;
+  gap: 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
+.form input,
+.form textarea,
+.upload input {
+  width: 100%;
+  border: 1px solid rgba(23, 23, 21, 0.2);
+  background: transparent;
+  color: inherit;
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.form textarea {
+  resize: vertical;
+}
+
+.form button,
+.actions button,
+.secondaryButton {
+  border: 0;
+  padding: 12px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.form button,
+.actions button {
+  background: #7dafca;
+  color: #10100f;
+}
+
+.secondaryButton {
+  background: transparent;
+  color: inherit;
+  border: 1px solid currentColor;
+}
+
+.form button:disabled,
+.actions button:disabled,
+.secondaryButton:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
+.message {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid currentColor;
+  opacity: 0.75;
+}
+
+.account {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+}
+
+.list {
+  display: grid;
+  gap: 18px;
+}
+
+.projectCard {
+  background: #1a1a18;
+  border: 1px solid rgba(245, 243, 237, 0.12);
+  padding: 24px;
+}
+
+.projectHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.projectHeading p {
+  max-width: 54ch;
+  opacity: 0.72;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.upload {
+  margin-top: 18px;
+  border-top: 1px solid rgba(245, 243, 237, 0.12);
+  padding-top: 18px;
+}
+
+.upload input {
+  border-color: rgba(245, 243, 237, 0.18);
+}
+
+@media (max-width: 860px) {
+  .shell,
+  .dashboard {
+    padding: 20px;
+  }
+
+  .header,
+  .projectHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account {
+    justify-items: start;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

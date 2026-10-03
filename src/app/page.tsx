@@ -1,4 +1,5 @@
 import { HeroSequence } from "@/components/hero-sequence";
+import { getPublishedProjects, projectCover } from "@/lib/projects";
 
 const services = [
   {
@@ -53,7 +54,9 @@ function ArrowIcon() {
   return <span aria-hidden="true">↗</span>;
 }
 
-export default function Home() {
+export default async function Home() {
+  const projects = await getPublishedProjects(6);
+
   return (
     <main>
       <HeroSequence />
@@ -115,25 +118,47 @@ export default function Home() {
         <div className="projects__heading">
           <h2 id="projects-title">Real work should carry the page.</h2>
           <p>
-            This area is reserved for client-supplied project photography. Project names,
-            locations and scopes will only be shown when they are confirmed.
+            Selected projects are published here only from confirmed client-supplied content.
           </p>
         </div>
 
-        <div className="projects__canvas" aria-label="Project gallery placeholder awaiting verified project media">
-          <div className="project-frame project-frame--wide">
-            <span>PROJECT MEDIA</span>
-            <small>Featured project / awaiting verified content</small>
+        {projects.length > 0 ? (
+          <div className="projects__canvas projects__canvas--live" aria-label="Selected projects">
+            {projects.map((project, index) => {
+              const cover = projectCover(project);
+              const shapeClass = index % 3 === 1
+                ? "project-frame--portrait"
+                : index % 3 === 2
+                  ? "project-frame--square"
+                  : "project-frame--wide";
+
+              return (
+                <article className={`project-frame project-frame--live ${shapeClass}`} key={project.id}>
+                  {cover ? <img src={cover.src} alt={cover.alt} loading="lazy" /> : null}
+                  <div className="project-frame__overlay">
+                    <span>{project.title}</span>
+                    {project.summary ? <small>{project.summary}</small> : null}
+                  </div>
+                </article>
+              );
+            })}
           </div>
-          <div className="project-frame project-frame--portrait">
-            <span>DETAIL</span>
-            <small>Material / finish / process</small>
+        ) : (
+          <div className="projects__canvas" aria-label="No published projects yet">
+            <div className="project-frame project-frame--wide">
+              <span>PROJECT MEDIA</span>
+              <small>Verified client projects will appear here when published.</small>
+            </div>
+            <div className="project-frame project-frame--portrait">
+              <span>DETAIL</span>
+              <small>Material / finish / process</small>
+            </div>
+            <div className="project-frame project-frame--square">
+              <span>PROJECT MEDIA</span>
+              <small>Additional selected work</small>
+            </div>
           </div>
-          <div className="project-frame project-frame--square">
-            <span>PROJECT MEDIA</span>
-            <small>Additional selected work</small>
-          </div>
-        </div>
+        )}
       </section>
 
       <section className="process section-shell" id="process" aria-labelledby="process-title">

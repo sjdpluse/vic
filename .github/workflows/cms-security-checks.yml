@@ -1,0 +1,69 @@
+name: CMS security checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/app/admin/**"
+      - "src/lib/projects.ts"
+      - "src/lib/supabase.ts"
+      - "supabase/migrations/**"
+      - ".github/workflows/cms-security-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-public-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: https://jemyrlzpsmtpveulrhgi.supabase.co
+      SUPABASE_KEY: sb_publishable_la4Zwo6DUHwtY1aQ3HijHA_WkgWOHik
+
+    steps:
+      - name: Public projects endpoint is readable
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl --silent --show-error --output /tmp/projects.json --write-out "%{http_code}" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            "${SUPABASE_URL}/rest/v1/projects?select=id,status&limit=5")
+          test "$status" = "200"
+          node -e 'const fs=require("fs"); const rows=JSON.parse(fs.readFileSync("/tmp/projects.json","utf8")); if(!Array.isArray(rows)) process.exit(1); if(rows.some(r=>r.status!=="published")) { console.error("Anonymous query exposed a non-published project"); process.exit(1); }'
+
+      - name: Anonymous project writes are denied
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl --silent --show-error --output /tmp/write.json --write-out "%{http_code}" \
+            -X POST \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            --data '{"slug":"security-check-must-not-insert","title":"Security check","status":"draft"}' \
+            "${SUPABASE_URL}/rest/v1/projects")
+          if [[ "$status" == "200" || "$status" == "201" || "$status" == "204" ]]; then
+            echo "Anonymous project write unexpectedly succeeded"
+            cat /tmp/write.json
+            exit 1
+          fi
+
+      - name: Anonymous project media uploads are denied
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'cms-security-check' > /tmp/security-check.txt
+          status=$(curl --silent --show-error --output /tmp/storage.json --write-out "%{http_code}" \
+            -X POST \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: text/plain" \
+            --data-binary @/tmp/security-check.txt \
+            "${SUPABASE_URL}/storage/v1/object/project-media/security-check/must-not-upload.txt")
+          if [[ "$status" == "200" || "$status" == "201" ]]; then
+            echo "Anonymous project-media upload unexpectedly succeeded"
+            exit 1
+          fi
