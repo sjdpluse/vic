@@ -1,0 +1,76 @@
+name: Deploy reviewed hero artifact
+
+on:
+  push:
+    branches: [feat/production-hero-assets]
+    paths:
+      - ".github/workflows/deploy-existing-hero-artifact.yml"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  deploy-reviewed-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: https://jemyrlzpsmtpveulrhgi.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_la4Zwo6DUHwtY1aQ3HijHA_WkgWOHik
+      BUCKET: hero-assets
+      PREFIX: hero/v1
+      ARTIFACT_ID: "11273288982"
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Download reviewed artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error -L \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            -o hero-frame-sequence.zip
+          mkdir -p artifacts/hero-sequence
+          unzip -q hero-frame-sequence.zip -d artifacts/hero-sequence
+          test -f artifacts/hero-sequence/manifest.json
+
+      - name: Build runtime manifest
+        run: node tools/hero-assets/runtime-manifest.mjs
+
+      - name: Upload AVIF, WebP and manifest to VIC Storage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          upload() {
+            local local_path="$1"
+            local remote_path="$2"
+            local content_type="$3"
+            curl --fail-with-body --silent --show-error \
+              -X POST \
+              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+              -H "Content-Type: ${content_type}" \
+              --data-binary "@${local_path}" \
+              "${SUPABASE_URL}/storage/v1/object/${BUCKET}/${PREFIX}/${remote_path}" >/dev/null
+          }
+
+          for profile in desktop mobile; do
+            for file in artifacts/hero-sequence/${profile}/avif/*.avif; do
+              upload "$file" "${profile}/avif/$(basename "$file")" "image/avif"
+            done
+            for file in artifacts/hero-sequence/${profile}/webp/*.webp; do
+              upload "$file" "${profile}/webp/$(basename "$file")" "image/webp"
+            done
+          done
+
+          upload artifacts/hero-sequence/runtime-manifest.json manifest.json application/json
+
+      - name: Confirm base URL
+        run: |
+          echo "Published reviewed hero artifact."
+          echo "NEXT_PUBLIC_HERO_SEQUENCE_BASE_URL=${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${PREFIX}"
