@@ -66,10 +66,12 @@ export function HeroSequence() {
   const copyRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const loadedRef = useRef(new Map<number, HTMLImageElement>());
+  const loadedBySrcRef = useRef(new Map<string, HTMLImageElement>());
   const queuedRef = useRef(new Set<number>());
   const queueRef = useRef<number[]>([]);
   const runningRef = useRef(0);
   const desiredRef = useRef(0);
+  const desiredPositionRef = useRef(0);
   const profileRef = useRef<Profile | null>(null);
   const [manifest, setManifest] = useState<FrameManifest | null>(null);
   const [activeBeat, setActiveBeat] = useState(0);
@@ -78,23 +80,41 @@ export function HeroSequence() {
   const [profileName, setProfileName] = useState<"desktop" | "mobile">("desktop");
   const [fallbackSrc, setFallbackSrc] = useState("/frames/desktop/frame-0001.jpg");
 
-  const draw = useCallback((requested: number) => {
+  const drawPosition = useCallback((position: number) => {
     const canvas = canvasRef.current;
     const profile = profileRef.current;
     if (!canvas || !profile) return;
 
+    const context = canvas.getContext("2d", { alpha: false });
+    if (!context) return;
+
+    const lower = Math.max(0, Math.floor(position));
+    const upper = Math.min(profile.frameCount - 1, Math.ceil(position));
+    const fraction = position - lower;
+    const lowerImage = loadedRef.current.get(lower);
+    const upperImage = loadedRef.current.get(upper);
+
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+
+    if (lowerImage && upperImage && lower !== upper) {
+      context.globalAlpha = 1;
+      context.drawImage(lowerImage, 0, 0, canvas.width, canvas.height);
+      context.globalAlpha = fraction;
+      context.drawImage(upperImage, 0, 0, canvas.width, canvas.height);
+      context.globalAlpha = 1;
+      setCanvasReady(true);
+      return;
+    }
+
+    const requested = Math.round(position);
     const index = nearestLoaded(requested, loadedRef.current, profile.frameCount);
     if (index === null) return;
 
     const image = loadedRef.current.get(index);
     if (!image) return;
 
-    const context = canvas.getContext("2d", { alpha: false });
-    if (!context) return;
-
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = "high";
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.globalAlpha = 1;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     setCanvasReady(true);
   }, []);
@@ -103,20 +123,33 @@ export function HeroSequence() {
     const profile = profileRef.current;
     if (!profile) return;
 
-    while (runningRef.current < 4 && queueRef.current.length > 0) {
+    while (runningRef.current < 6 && queueRef.current.length > 0) {
       const index = queueRef.current.shift();
       if (index === undefined || loadedRef.current.has(index)) continue;
+
+      const src = profile.frames[index].src;
+      const reusedImage = loadedBySrcRef.current.get(src);
+      if (reusedImage) {
+        loadedRef.current.set(index, reusedImage);
+        drawPosition(desiredPositionRef.current);
+        continue;
+      }
 
       runningRef.current += 1;
       const image = new Image();
       image.decoding = "async";
-      image.src = profile.frames[index].src;
+      image.src = src;
       image.onload = () => {
-        loadedRef.current.set(index, image);
-        runningRef.current -= 1;
-        if (Math.abs(index - desiredRef.current) <= 1 || loadedRef.current.size === 1) {
-          draw(desiredRef.current);
+        loadedBySrcRef.current.set(src, image);
+
+        for (let frameIndex = 0; frameIndex < profile.frames.length; frameIndex += 1) {
+          if (profile.frames[frameIndex].src === src) {
+            loadedRef.current.set(frameIndex, image);
+          }
         }
+
+        runningRef.current -= 1;
+        drawPosition(desiredPositionRef.current);
         pumpQueue();
       };
       image.onerror = () => {
@@ -124,28 +157,35 @@ export function HeroSequence() {
         pumpQueue();
       };
     }
-  }, [draw]);
+  }, [drawPosition]);
 
   const enqueue = useCallback(
-    (index: number) => {
+    (index: number, priority = false) => {
       const profile = profileRef.current;
       if (!profile || index < 0 || index >= profile.frameCount) return;
       if (loadedRef.current.has(index) || queuedRef.current.has(index)) return;
       queuedRef.current.add(index);
-      queueRef.current.push(index);
+      if (priority) queueRef.current.unshift(index);
+      else queueRef.current.push(index);
       pumpQueue();
     },
     [pumpQueue],
   );
 
   const preloadAround = useCallback(
-    (index: number) => {
+    (position: number) => {
       const profile = profileRef.current;
       if (!profile) return;
-      enqueue(index);
+
+      const lower = Math.floor(position);
+      const upper = Math.ceil(position);
+      enqueue(lower, true);
+      enqueue(upper, true);
+
+      const center = Math.round(position);
       for (let distance = 1; distance <= profile.preloadRadius; distance += 1) {
-        enqueue(index + distance);
-        enqueue(index - distance);
+        enqueue(center + distance, distance <= 3);
+        enqueue(center - distance, distance <= 3);
       }
     },
     [enqueue],
@@ -180,6 +220,7 @@ export function HeroSequence() {
     const configure = () => {
       const nextProfileName = mobileQuery.matches ? "mobile" : "desktop";
       const profile = manifest.profiles[nextProfileName];
+      const initialPosition = reduceQuery.matches ? profile.frameCount - 1 : 0;
 
       setProfileName(nextProfileName);
       setReducedMotion(reduceQuery.matches);
@@ -190,14 +231,16 @@ export function HeroSequence() {
       );
 
       loadedRef.current.clear();
+      loadedBySrcRef.current.clear();
       queuedRef.current.clear();
       queueRef.current = [];
       runningRef.current = 0;
       profileRef.current = profile;
-      desiredRef.current = reduceQuery.matches ? profile.frameCount - 1 : 0;
-      enqueue(desiredRef.current);
-      enqueue(profile.frameCount - 1);
-      preloadAround(desiredRef.current);
+      desiredRef.current = Math.round(initialPosition);
+      desiredPositionRef.current = initialPosition;
+      enqueue(desiredRef.current, true);
+      enqueue(profile.frameCount - 1, true);
+      preloadAround(initialPosition);
     };
 
     configure();
@@ -227,17 +270,16 @@ export function HeroSequence() {
       const profile = profileRef.current;
       if (!profile) return;
 
-      const requested = Math.round(progress * (profile.frameCount - 1));
+      const position = progress * (profile.frameCount - 1);
+      const requested = Math.round(position);
       desiredRef.current = requested;
-      preloadAround(requested);
-      draw(requested);
+      desiredPositionRef.current = position;
+      preloadAround(position);
+      drawPosition(position);
 
       const nextBeat = beatIndex(progress);
       setActiveBeat((current) => (current === nextBeat ? current : nextBeat));
 
-      // Normal document scroll already moves the hero upward. Counterbalancing
-      // part of that travel keeps the renewed house in-frame until the content
-      // handoff, while the net screen-space motion still rises substantially.
       const rise = gsap.utils.interpolate(8, 48, progress);
       const scale = gsap.utils.interpolate(0.96, 1.015, progress);
       gsap.set(stage, { y: `${rise}svh`, xPercent: -50, scale });
@@ -252,7 +294,7 @@ export function HeroSequence() {
       trigger: section,
       start: "top top",
       end: "bottom bottom",
-      scrub: true,
+      scrub: 0.18,
       invalidateOnRefresh: true,
       onUpdate: (self) => updateProgress(self.progress),
     });
@@ -264,8 +306,8 @@ export function HeroSequence() {
     };
 
     const idleId = window.requestIdleCallback
-      ? window.requestIdleCallback(scheduleBackgroundPreload, { timeout: 1800 })
-      : window.setTimeout(scheduleBackgroundPreload, 900);
+      ? window.requestIdleCallback(scheduleBackgroundPreload, { timeout: 1200 })
+      : window.setTimeout(scheduleBackgroundPreload, 500);
 
     return () => {
       trigger.kill();
@@ -274,10 +316,18 @@ export function HeroSequence() {
         else window.clearTimeout(idleId);
       }
     };
-  }, [draw, enqueue, manifest, preloadAround, reducedMotion]);
+  }, [drawPosition, enqueue, manifest, preloadAround, reducedMotion]);
 
   return (
-    <section className="hero" ref={sectionRef} aria-labelledby="hero-title">
+    <section
+      className="hero"
+      ref={sectionRef}
+      aria-labelledby="hero-title"
+      style={{
+        background:
+          "linear-gradient(180deg, #7dafca 0%, #a9d2ee 25%, #dce9ea 45%, #f5f3ed 68%, #f5f3ed 100%)",
+      }}
+    >
       <header className="site-header">
         <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
           <span>VIC PREMIER</span>
