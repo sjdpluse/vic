@@ -1,0 +1,74 @@
+name: Build hero frame artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      avif_quality:
+        description: AVIF quality
+        required: false
+        default: "56"
+      webp_quality:
+        description: WebP quality
+        required: false
+        default: "82"
+      mobile_width:
+        description: Mobile prototype width
+        required: false
+        default: "800"
+      smoke_limit:
+        description: Optional frame limit for smoke testing (0 = full sequence)
+        required: false
+        default: "0"
+
+permissions:
+  contents: read
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: tools/hero-assets/package.json
+
+      - name: Install isolated asset tooling
+        run: npm install --prefix tools/hero-assets --no-audit --no-fund
+
+      - name: Encode AVIF and WebP frame sets
+        shell: bash
+        run: |
+          args=(
+            --input png
+            --output artifacts/hero-sequence
+            --desktop-width 1280
+            --mobile-width "${{ inputs.mobile_width }}"
+            --avif-quality "${{ inputs.avif_quality }}"
+            --webp-quality "${{ inputs.webp_quality }}"
+            --concurrency 2
+          )
+
+          if [[ "${{ inputs.smoke_limit }}" != "0" ]]; then
+            args+=(--limit "${{ inputs.smoke_limit }}")
+          fi
+
+          node tools/hero-assets/optimize.mjs "${args[@]}"
+
+      - name: Print measured summary
+        run: cat artifacts/hero-sequence/SUMMARY.md
+
+      - name: Upload generated frame artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-frame-sequence
+          path: artifacts/hero-sequence
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
