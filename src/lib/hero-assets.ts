@@ -36,18 +36,57 @@ export const HERO_MANIFEST_URL = HERO_SEQUENCE_BASE_URL
   ? `${HERO_SEQUENCE_BASE_URL}/manifest.json`
   : LOCAL_MANIFEST_URL;
 
-export function resolveHeroAssetUrl(value: string) {
-  if (/^https?:\/\//i.test(value)) return value;
-  if (!HERO_SEQUENCE_BASE_URL) return value;
-  return `${HERO_SEQUENCE_BASE_URL}/${value.replace(/^\/+/, "")}`;
+function resolveAgainstBase(value: string, baseUrl: string | null) {
+  if (/^https?:\/\//i.test(value) || !baseUrl) return value;
+  return `${baseUrl}/${value.replace(/^\/+/, "")}`;
+}
+
+function normalizeManifest(manifest: HeroManifest, baseUrl: string | null): HeroManifest {
+  return {
+    ...manifest,
+    profiles: {
+      desktop: {
+        ...manifest.profiles.desktop,
+        frames: manifest.profiles.desktop.frames.map((frame) => ({
+          ...frame,
+          src: frame.src ? resolveAgainstBase(frame.src, baseUrl) : undefined,
+          sources: frame.sources
+            ? {
+                avif: frame.sources.avif
+                  ? resolveAgainstBase(frame.sources.avif, baseUrl)
+                  : undefined,
+                webp: frame.sources.webp
+                  ? resolveAgainstBase(frame.sources.webp, baseUrl)
+                  : undefined,
+              }
+            : undefined,
+        })),
+      },
+      mobile: {
+        ...manifest.profiles.mobile,
+        frames: manifest.profiles.mobile.frames.map((frame) => ({
+          ...frame,
+          src: frame.src ? resolveAgainstBase(frame.src, baseUrl) : undefined,
+          sources: frame.sources
+            ? {
+                avif: frame.sources.avif
+                  ? resolveAgainstBase(frame.sources.avif, baseUrl)
+                  : undefined,
+                webp: frame.sources.webp
+                  ? resolveAgainstBase(frame.sources.webp, baseUrl)
+                  : undefined,
+              }
+            : undefined,
+        })),
+      },
+    },
+  };
 }
 
 export function frameSourceCandidates(frame: HeroFrame) {
-  const values = [frame.sources?.avif, frame.sources?.webp, frame.src]
-    .filter((value): value is string => Boolean(value))
-    .map(resolveHeroAssetUrl);
-
-  return [...new Set(values)];
+  return [...new Set([frame.sources?.avif, frame.sources?.webp, frame.src].filter(
+    (value): value is string => Boolean(value),
+  ))];
 }
 
 export async function fetchHeroManifest(signal?: AbortSignal): Promise<HeroManifest> {
@@ -68,7 +107,12 @@ export async function fetchHeroManifest(signal?: AbortSignal): Promise<HeroManif
         throw new Error(`Hero manifest request failed with ${response.status}`);
       }
 
-      return (await response.json()) as HeroManifest;
+      const manifest = (await response.json()) as HeroManifest;
+      const baseUrl = HERO_SEQUENCE_BASE_URL && url === HERO_MANIFEST_URL
+        ? HERO_SEQUENCE_BASE_URL
+        : null;
+
+      return normalizeManifest(manifest, baseUrl);
     } catch (error) {
       if (signal?.aborted) throw error;
       lastError = error;
