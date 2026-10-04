@@ -37,6 +37,11 @@
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
+  outline: none;
+}
+
+.stage:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(20 20 20 / 18%);
 }
 
 .interacting {
@@ -58,8 +63,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: clamp(330px, 26vw, 420px);
-  aspect-ratio: .66;
+  width: clamp(300px, 23vw, 370px);
+  aspect-ratio: .72;
   transform: translate(-50%, -50%) translate(var(--card-x), var(--card-y)) rotate(var(--card-angle));
   transform-origin: 50% 50%;
   transition:
@@ -86,28 +91,32 @@
 }
 
 .card {
-  display: flex;
+  position: relative;
   width: 100%;
   height: 100%;
-  flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgb(20 20 20 / 7%);
   border-radius: 30px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgb(20 20 20 / 4%);
+  background: #1d1d1d;
+  box-shadow: 0 8px 24px rgb(20 20 20 / 8%);
 }
 
 .centered .card {
-  box-shadow: 0 12px 34px rgb(20 20 20 / 7%);
+  box-shadow: 0 12px 34px rgb(20 20 20 / 13%);
 }
 
 .media {
-  position: relative;
-  margin: 22px 22px 0;
-  aspect-ratio: 1.04 / 1;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  border-radius: 22px;
   background: #dcd8cf;
+}
+
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 2%) 30%, rgb(0 0 0 / 18%) 55%, rgb(0 0 0 / 78%) 100%);
+  pointer-events: none;
 }
 
 .media img {
@@ -116,14 +125,19 @@
   height: 100%;
   object-fit: cover;
   pointer-events: none;
+  transform: scale(1.01);
 }
 
 .content {
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 0;
   display: flex;
-  min-height: 0;
-  flex: 1;
+  min-height: 46%;
   flex-direction: column;
-  padding: 23px 28px 28px;
+  justify-content: flex-end;
+  padding: 34px 30px 30px;
+  color: #fff;
 }
 
 .content h3 {
@@ -137,9 +151,9 @@
 
 .content p {
   margin: 14px 0 22px;
-  color: var(--muted);
+  color: rgb(255 255 255 / 82%);
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .cta {
@@ -147,7 +161,7 @@
   align-items: center;
   gap: 8px;
   width: fit-content;
-  margin-top: auto;
+  color: #fff;
   font-size: 13px;
   line-height: 1;
 }
@@ -161,9 +175,8 @@
 }
 
 .cta:focus-visible {
-  outline: 3px solid #fff;
-  box-shadow: 0 0 0 6px #151515;
-  outline-offset: 4px;
+  outline: 2px solid #fff;
+  outline-offset: 5px;
 }
 
 .controls {
@@ -230,8 +243,8 @@
   }
 
   .cardPosition {
-    width: min(62vw, 440px);
-    min-width: 300px;
+    width: min(58vw, 390px);
+    min-width: 290px;
   }
 }
 
@@ -260,21 +273,17 @@
   }
 
   .cardPosition {
-    width: min(72vw, 340px);
-    min-width: 280px;
+    width: min(68vw, 320px);
+    min-width: 270px;
   }
 
   .card {
     border-radius: 28px;
   }
 
-  .media {
-    margin: 18px 18px 0;
-    border-radius: 20px;
-  }
-
   .content {
-    padding: 20px 24px 25px;
+    min-height: 48%;
+    padding: 30px 24px 25px;
   }
 
   .content h3 {
