@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties, MouseEvent, PointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import type { ServiceDefinition } from "@/lib/services";
 import styles from "./service-carousel.module.css";
 
 type ServiceCarouselProps = { services: ServiceDefinition[] };
+
+const ANGLE_STEP = 10;
+const VISIBLE_ANGLE = 31;
 
 const serviceImages: Record<string, { src: string; alt: string }> = {
   "residential-construction-renovation": { src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1400&q=84", alt: "Interior framing during a residential renovation" },
@@ -19,139 +30,185 @@ const serviceImages: Record<string, { src: string; alt: string }> = {
   "general-carpentry": { src: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1400&q=84", alt: "Carpenter working with timber in a workshop" },
 };
 
-const rotations = [-5, 0, 4.2, -3.2, 4.6, -4, 3.4, -2.8];
+function mod(value: number, count: number) {
+  return ((value % count) + count) % count;
+}
+
+function nearestVirtualIndex(index: number, position: number, count: number) {
+  return index + Math.round((position - index) / count) * count;
+}
 
 export function ServiceCarousel({ services }: ServiceCarouselProps) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
-  const [dragging, setDragging] = useState(false);
-  const [canBack, setCanBack] = useState(false);
-  const [canForward, setCanForward] = useState(true);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({ active: false, startX: 0, startPosition: 0, moved: false });
+  const wheelTimerRef = useRef<number | null>(null);
+  const [position, setPosition] = useState(0);
+  const [radius, setRadius] = useState(1400);
+  const [interacting, setInteracting] = useState(false);
 
-  const updateControls = useCallback(() => {
-    const node = scrollerRef.current;
-    if (!node) return;
-    setCanBack(node.scrollLeft > 6);
-    setCanForward(node.scrollLeft < node.scrollWidth - node.clientWidth - 6);
+  const activeIndex = useMemo(
+    () => (services.length ? mod(Math.round(position), services.length) : 0),
+    [position, services.length],
+  );
+
+  const measure = useCallback(() => {
+    const width = stageRef.current?.clientWidth ?? window.innerWidth;
+    const nextRadius = width <= 640
+      ? Math.max(700, width * 1.8)
+      : Math.min(1650, Math.max(1120, width * 1.08));
+    setRadius(nextRadius);
   }, []);
 
   useEffect(() => {
-    const node = scrollerRef.current;
+    measure();
+    const node = stageRef.current;
     if (!node) return;
-    const observer = new ResizeObserver(updateControls);
+    const observer = new ResizeObserver(measure);
     observer.observe(node);
+    return () => observer.disconnect();
+  }, [measure]);
 
-    const frame = window.requestAnimationFrame(() => {
-      const card = node.querySelector<HTMLElement>("[data-service-card]");
-      if (card && node.scrollLeft < 2) node.scrollLeft = (card.offsetWidth + 28) * 0.72;
-      updateControls();
-    });
-
-    const wheel = (event: globalThis.WheelEvent) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-      const atStart = node.scrollLeft <= 6;
-      const atEnd = node.scrollLeft >= node.scrollWidth - node.clientWidth - 6;
-      if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) return;
-      event.preventDefault();
-      node.scrollLeft += event.deltaY;
-    };
-    node.addEventListener("wheel", wheel, { passive: false });
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      observer.disconnect();
-      node.removeEventListener("wheel", wheel);
-    };
-  }, [updateControls]);
-
-  const step = useCallback((direction: -1 | 1) => {
-    const node = scrollerRef.current;
-    if (!node) return;
-    const card = node.querySelector<HTMLElement>("[data-service-card]");
-    const distance = (card?.offsetWidth ?? node.clientWidth * 0.34) + 28;
-    node.scrollBy({ left: direction * distance, behavior: "smooth" });
+  useEffect(() => () => {
+    if (wheelTimerRef.current !== null) window.clearTimeout(wheelTimerRef.current);
   }, []);
 
-  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "touch") return;
-    const node = scrollerRef.current;
+  const step = useCallback((direction: -1 | 1) => {
+    setInteracting(false);
+    setPosition((current) => Math.round(current) + direction);
+  }, []);
+
+  function onWheel(event: globalThis.WheelEvent) {
+    if (!services.length) return;
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    if (Math.abs(delta) < 0.5) return;
+    event.preventDefault();
+    setInteracting(true);
+    setPosition((current) => current + delta / 320);
+
+    if (wheelTimerRef.current !== null) window.clearTimeout(wheelTimerRef.current);
+    wheelTimerRef.current = window.setTimeout(() => {
+      setPosition((current) => {
+        setInteracting(false);
+        return Math.round(current);
+      });
+    }, 120);
+  }
+
+  useEffect(() => {
+    const node = stageRef.current;
     if (!node) return;
-    dragRef.current = { active: true, startX: event.clientX, scrollLeft: node.scrollLeft, moved: false };
-    setDragging(true);
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  });
+
+  function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const node = stageRef.current;
+    if (!node) return;
+    dragRef.current = { active: true, startX: event.clientX, startPosition: position, moved: false };
+    setInteracting(true);
     node.setPointerCapture(event.pointerId);
   }
 
-  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const node = scrollerRef.current;
+  function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
-    if (!node || !drag.active) return;
+    if (!drag.active) return;
     const delta = event.clientX - drag.startX;
     if (Math.abs(delta) > 5) drag.moved = true;
-    node.scrollLeft = drag.scrollLeft - delta;
+    const pixelsPerCard = Math.max(120, radius * Math.sin((ANGLE_STEP * Math.PI) / 180));
+    setPosition(drag.startPosition - delta / pixelsPerCard);
   }
 
-  function finishDrag(event: PointerEvent<HTMLDivElement>) {
-    const node = scrollerRef.current;
-    if (!node || !dragRef.current.active) return;
+  function finishDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const node = stageRef.current;
+    if (!dragRef.current.active || !node) return;
     dragRef.current.active = false;
-    setDragging(false);
     if (node.hasPointerCapture(event.pointerId)) node.releasePointerCapture(event.pointerId);
+    setPosition((current) => {
+      const snapped = Math.round(current);
+      window.requestAnimationFrame(() => setInteracting(false));
+      return snapped;
+    });
   }
 
-  function guardDraggedLink(event: MouseEvent<HTMLAnchorElement>) {
-    if (dragRef.current.moved) {
-      event.preventDefault();
-      dragRef.current.moved = false;
-    }
+  function guardDraggedLink(event: ReactMouseEvent<HTMLAnchorElement>) {
+    if (!dragRef.current.moved) return;
+    event.preventDefault();
+    dragRef.current.moved = false;
   }
+
+  if (!services.length) return null;
 
   return (
     <section className={styles.section} aria-labelledby="service-carousel-title">
-      <div className={styles.blobBlue} aria-hidden="true" />
-      <div className={styles.blobRed} aria-hidden="true" />
-      <div className={styles.headlineWrap}>
+      <div className={styles.heading}>
         <span className={styles.eyebrow}>01 / Services</span>
-        <h2 id="service-carousel-title">Built for every stage of the work.</h2>
+        <h2 id="service-carousel-title">Services for every stage of the work.</h2>
       </div>
+
       <div
-        ref={scrollerRef}
-        className={`${styles.scroller} ${dragging ? styles.dragging : ""}`}
-        onScroll={updateControls}
+        ref={stageRef}
+        className={`${styles.stage} ${interacting ? styles.interacting : ""}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
-        onPointerLeave={(event) => { if (dragRef.current.active && event.buttons === 0) finishDrag(event); }}
-        aria-label="VIC Premier services"
+        aria-label="VIC Premier services carousel"
       >
-        <div className={styles.track}>
+        <div className={styles.circle} style={{ width: `${radius * 2}px`, height: `${radius * 2}px` }}>
           {services.map((service, index) => {
+            const virtualIndex = nearestVirtualIndex(index, position, services.length);
+            const relative = virtualIndex - position;
+            const angle = relative * ANGLE_STEP;
+            const radians = (angle * Math.PI) / 180;
+            const x = radius + radius * Math.sin(radians);
+            const y = radius - radius * Math.cos(radians);
+            const visible = Math.abs(angle) <= VISIBLE_ANGLE;
+            const isActive = index === activeIndex;
             const image = serviceImages[service.slug];
+            const style = {
+              "--card-x": `${x}px`,
+              "--card-y": `${y}px`,
+              "--card-angle": `${angle}deg`,
+              zIndex: 100 - Math.round(Math.abs(angle)),
+            } as CSSProperties;
+
             return (
-              <Link
-                data-service-card
+              <article
                 key={service.slug}
-                href={`/services/${service.slug}`}
-                className={styles.card}
-                style={{ "--card-rotation": `${rotations[index % rotations.length]}deg` } as CSSProperties}
-                onClick={guardDraggedLink}
+                className={`${styles.cardPosition} ${visible ? styles.visible : styles.hidden} ${isActive ? styles.centered : ""}`}
+                style={style}
+                aria-hidden={!visible}
               >
-                <div className={styles.media}>{image ? <img src={image.src} alt={image.alt} draggable={false} loading="lazy" decoding="async" /> : null}</div>
-                <div className={styles.copy}>
-                  <h3>{service.shortTitle}</h3>
-                  <p>{service.summary}</p>
-                  <span>Explore service <span aria-hidden="true">→</span></span>
+                <div className={styles.card}>
+                  <div className={styles.media}>
+                    {image ? <img src={image.src} alt={image.alt} draggable={false} loading="lazy" decoding="async" /> : null}
+                  </div>
+                  <div className={styles.content}>
+                    <h3>{service.shortTitle}</h3>
+                    <p>{service.summary}</p>
+                    <Link
+                      href={`/services/${service.slug}`}
+                      className={styles.cta}
+                      tabIndex={isActive ? 0 : -1}
+                      onClick={guardDraggedLink}
+                    >
+                      <span>Explore service</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
                 </div>
-              </Link>
+              </article>
             );
           })}
         </div>
       </div>
+
       <div className={styles.controls} aria-label="Service carousel controls">
-        <button type="button" onClick={() => step(-1)} disabled={!canBack} aria-label="Previous services">←</button>
-        <button type="button" onClick={() => step(1)} disabled={!canForward} aria-label="Next services">→</button>
+        <button type="button" onClick={() => step(-1)} aria-label="Previous service">←</button>
+        <button type="button" onClick={() => step(1)} aria-label="Next service">→</button>
       </div>
-      <p className={styles.note}>Service imagery is illustrative and is not presented as VIC Premier project photography.</p>
+      <span className={styles.srOnly} aria-live="polite">{services[activeIndex]?.title}</span>
     </section>
   );
 }
