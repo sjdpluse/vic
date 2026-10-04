@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -16,7 +17,7 @@ import styles from "./service-carousel.module.css";
 
 type ServiceCarouselProps = { services: ServiceDefinition[] };
 
-const ANGLE_STEP = 10;
+const ROTATION_STEP = 10;
 const VISIBLE_ANGLE = 31;
 
 const serviceImages: Record<string, { src: string; alt: string }> = {
@@ -41,9 +42,8 @@ function nearestVirtualIndex(index: number, position: number, count: number) {
 export function ServiceCarousel({ services }: ServiceCarouselProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, startX: 0, startPosition: 0, moved: false });
-  const wheelTimerRef = useRef<number | null>(null);
   const [position, setPosition] = useState(0);
-  const [radius, setRadius] = useState(1400);
+  const [radius, setRadius] = useState(2050);
   const [interacting, setInteracting] = useState(false);
 
   const activeIndex = useMemo(
@@ -53,10 +53,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
 
   const measure = useCallback(() => {
     const width = stageRef.current?.clientWidth ?? window.innerWidth;
-    const nextRadius = width <= 640
-      ? Math.max(700, width * 1.8)
-      : Math.min(1650, Math.max(1120, width * 1.08));
-    setRadius(nextRadius);
+    setRadius(width <= 640 ? 1600 : width <= 900 ? 1800 : 2050);
   }, []);
 
   useEffect(() => {
@@ -68,38 +65,21 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     return () => observer.disconnect();
   }, [measure]);
 
-  useEffect(() => () => {
-    if (wheelTimerRef.current !== null) window.clearTimeout(wheelTimerRef.current);
-  }, []);
-
   const step = useCallback((direction: -1 | 1) => {
     setInteracting(false);
     setPosition((current) => Math.round(current) + direction);
   }, []);
 
-  function onWheel(event: globalThis.WheelEvent) {
-    if (!services.length) return;
-    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-    if (Math.abs(delta) < 0.5) return;
-    event.preventDefault();
-    setInteracting(true);
-    setPosition((current) => current + delta / 320);
-
-    if (wheelTimerRef.current !== null) window.clearTimeout(wheelTimerRef.current);
-    wheelTimerRef.current = window.setTimeout(() => {
-      setPosition((current) => {
-        setInteracting(false);
-        return Math.round(current);
-      });
-    }, 120);
+  function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      step(-1);
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      step(1);
+    }
   }
-
-  useEffect(() => {
-    const node = stageRef.current;
-    if (!node) return;
-    node.addEventListener("wheel", onWheel, { passive: false });
-    return () => node.removeEventListener("wheel", onWheel);
-  });
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -115,7 +95,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     if (!drag.active) return;
     const delta = event.clientX - drag.startX;
     if (Math.abs(delta) > 5) drag.moved = true;
-    const pixelsPerCard = Math.max(120, radius * Math.sin((ANGLE_STEP * Math.PI) / 180));
+    const pixelsPerCard = Math.max(180, radius * Math.sin((ROTATION_STEP * Math.PI) / 180));
     setPosition(drag.startPosition - delta / pixelsPerCard);
   }
 
@@ -149,17 +129,19 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
       <div
         ref={stageRef}
         className={`${styles.stage} ${interacting ? styles.interacting : ""}`}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
-        aria-label="VIC Premier services carousel"
+        aria-label="VIC Premier services carousel. Drag left or right, or use the arrow keys to navigate."
       >
         <div className={styles.circle} style={{ width: `${radius * 2}px`, height: `${radius * 2}px` }}>
           {services.map((service, index) => {
             const virtualIndex = nearestVirtualIndex(index, position, services.length);
             const relative = virtualIndex - position;
-            const angle = relative * ANGLE_STEP;
+            const angle = relative * ROTATION_STEP;
             const radians = (angle * Math.PI) / 180;
             const x = radius + radius * Math.sin(radians);
             const y = radius - radius * Math.cos(radians);
