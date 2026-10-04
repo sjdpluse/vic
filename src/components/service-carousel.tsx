@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { PointerEvent, WheelEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties, MouseEvent, PointerEvent, WheelEvent } from "react";
 import type { ServiceDefinition } from "@/lib/services";
 import styles from "./service-carousel.module.css";
 
@@ -111,7 +112,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     if (node.hasPointerCapture(event.pointerId)) node.releasePointerCapture(event.pointerId);
   }
 
-  function guardDraggedLink(event: React.MouseEvent<HTMLAnchorElement>) {
+  function guardDraggedLink(event: MouseEvent<HTMLAnchorElement>) {
     if (dragRef.current.moved) {
       event.preventDefault();
       dragRef.current.moved = false;
@@ -150,7 +151,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
                 key={service.slug}
                 href={`/services/${service.slug}`}
                 className={styles.card}
-                style={{ "--card-rotation": `${rotations[index % rotations.length]}deg` } as React.CSSProperties}
+                style={{ "--card-rotation": `${rotations[index % rotations.length]}deg` } as CSSProperties}
                 onClick={guardDraggedLink}
               >
                 <div className={styles.media}>
