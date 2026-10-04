@@ -20,7 +20,7 @@
   justify-content: space-between;
   gap: 32px;
   align-items: flex-end;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
   border-bottom: 1px solid rgba(245, 243, 237, 0.16);
   padding-bottom: 24px;
 }
@@ -47,11 +47,12 @@
 .eyebrow,
 .status,
 .slug,
-.account small {
+.account small,
+.coverBadge {
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  opacity: 0.62;
+  opacity: 0.7;
 }
 
 .card {
@@ -74,7 +75,8 @@
 }
 
 .form label,
-.upload {
+.upload,
+.editGrid label {
   display: grid;
   gap: 8px;
   font-size: 0.82rem;
@@ -83,7 +85,9 @@
 
 .form input,
 .form textarea,
-.upload input {
+.upload input,
+.editGrid input,
+.editGrid textarea {
   width: 100%;
   border: 1px solid rgba(23, 23, 21, 0.2);
   background: transparent;
@@ -92,13 +96,22 @@
   font: inherit;
 }
 
-.form textarea {
+.editGrid input,
+.editGrid textarea,
+.upload input {
+  border-color: rgba(245, 243, 237, 0.18);
+}
+
+.form textarea,
+.editGrid textarea {
   resize: vertical;
 }
 
 .form button,
 .actions button,
-.secondaryButton {
+.secondaryButton,
+.editGrid button,
+.mediaActions button {
   border: 0;
   padding: 12px 16px;
   font: inherit;
@@ -106,30 +119,43 @@
 }
 
 .form button,
-.actions button {
+.actions button,
+.editGrid button,
+.mediaActions button {
   background: #7dafca;
   color: #10100f;
 }
 
 .secondaryButton {
-  background: transparent;
-  color: inherit;
-  border: 1px solid currentColor;
+  background: transparent !important;
+  color: inherit !important;
+  border: 1px solid currentColor !important;
+}
+
+.dangerButton {
+  background: #3d1717 !important;
+  color: #fff !important;
 }
 
 .form button:disabled,
 .actions button:disabled,
-.secondaryButton:disabled {
+.secondaryButton:disabled,
+.editGrid button:disabled,
+.mediaActions button:disabled {
   cursor: wait;
   opacity: 0.45;
 }
 
-.message {
-  margin-top: 18px;
-  padding-top: 14px;
+.message,
+.globalMessage {
+  padding: 14px 0;
   border-top: 1px solid currentColor;
-  opacity: 0.75;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.8;
 }
+
+.message { margin-top: 18px; }
+.globalMessage { margin: 0 0 30px; }
 
 .account {
   display: grid;
@@ -139,14 +165,14 @@
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(280px, 0.62fr) minmax(0, 1.38fr);
   gap: clamp(24px, 4vw, 56px);
   align-items: start;
 }
 
 .list {
   display: grid;
-  gap: 18px;
+  gap: 22px;
 }
 
 .projectCard {
@@ -166,6 +192,23 @@
   opacity: 0.72;
 }
 
+.slug {
+  color: #bcd9e9;
+}
+
+.editGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(245, 243, 237, 0.12);
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
 .actions {
   display: flex;
   gap: 10px;
@@ -179,11 +222,73 @@
   padding-top: 18px;
 }
 
-.upload input {
-  border-color: rgba(245, 243, 237, 0.18);
+.mediaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
 }
 
-@media (max-width: 860px) {
+.mediaCard {
+  border: 1px solid rgba(245, 243, 237, 0.12);
+  background: #11110f;
+}
+
+.mediaPreview {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #080808;
+}
+
+.mediaPreview img,
+.mediaPreview video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.coverBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 7px 9px;
+  background: rgba(16, 16, 15, 0.8);
+  color: #fff;
+  opacity: 1;
+}
+
+.mediaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+}
+
+.mediaActions button {
+  padding: 8px 10px;
+  font-size: 0.76rem;
+}
+
+.emptyMedia {
+  margin: 18px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(245, 243, 237, 0.12);
+  opacity: 0.62;
+}
+
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
   .shell,
   .dashboard {
     padding: 20px;
@@ -199,7 +304,12 @@
     justify-items: start;
   }
 
-  .grid {
+  .editGrid,
+  .mediaGrid {
     grid-template-columns: 1fr;
+  }
+
+  .fullWidth {
+    grid-column: auto;
   }
 }
