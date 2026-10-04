@@ -17,8 +17,9 @@ import styles from "./service-carousel.module.css";
 
 type ServiceCarouselProps = { services: ServiceDefinition[] };
 
-const ROTATION_STEP = 10;
-const VISIBLE_ANGLE = 31;
+const ANGLE_STEP = 10;
+const VISIBLE_ANGLE = 30.1;
+const BUFFER = 4;
 
 const serviceImages: Record<string, { src: string; alt: string }> = {
   "residential-construction-renovation": { src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1400&q=84", alt: "Interior framing during a residential renovation" },
@@ -35,25 +36,43 @@ function mod(value: number, count: number) {
   return ((value % count) + count) % count;
 }
 
-function nearestVirtualIndex(index: number, position: number, count: number) {
-  return index + Math.round((position - index) / count) * count;
+function ArrowIcon({ next = false }: { next?: boolean }) {
+  return (
+    <svg
+      className={next ? styles.nextIcon : undefined}
+      width="100%"
+      height="100%"
+      viewBox="0 0 60 60"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path d="M26 30L32.7845 23L34 24.2542L28.4311 30L34 35.7458L32.7845 37L26 30Z" fill="currentColor" />
+    </svg>
+  );
 }
 
 export function ServiceCarousel({ services }: ServiceCarouselProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, startX: 0, startPosition: 0, moved: false });
   const [position, setPosition] = useState(0);
-  const [radius, setRadius] = useState(2050);
+  const [radius, setRadius] = useState(1650);
   const [interacting, setInteracting] = useState(false);
 
-  const activeIndex = useMemo(
-    () => (services.length ? mod(Math.round(position), services.length) : 0),
-    [position, services.length],
-  );
+  const activeVirtualIndex = Math.round(position);
+  const activeIndex = services.length ? mod(activeVirtualIndex, services.length) : 0;
+
+  const virtualCards = useMemo(() => {
+    if (!services.length) return [] as number[];
+    const start = Math.floor(position) - BUFFER;
+    return Array.from({ length: BUFFER * 2 + 2 }, (_, offset) => start + offset);
+  }, [position, services.length]);
 
   const measure = useCallback(() => {
     const width = stageRef.current?.clientWidth ?? window.innerWidth;
-    setRadius(width <= 640 ? 1600 : width <= 900 ? 1800 : 2050);
+    if (width > 1920) setRadius(4000);
+    else if (width > 1024) setRadius(4250);
+    else setRadius(1650);
   }, []);
 
   useEffect(() => {
@@ -95,7 +114,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     if (!drag.active) return;
     const delta = event.clientX - drag.startX;
     if (Math.abs(delta) > 5) drag.moved = true;
-    const pixelsPerCard = Math.max(180, radius * Math.sin((ROTATION_STEP * Math.PI) / 180));
+    const pixelsPerCard = Math.max(120, radius * Math.sin((ANGLE_STEP * Math.PI) / 180));
     setPosition(drag.startPosition - delta / pixelsPerCard);
   }
 
@@ -122,8 +141,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
   return (
     <section className={styles.section} aria-labelledby="service-carousel-title">
       <div className={styles.heading}>
-        <span className={styles.eyebrow}>01 / Services</span>
-        <h2 id="service-carousel-title">Services for every stage of the work.</h2>
+        <h2 id="service-carousel-title">Our Services</h2>
       </div>
 
       <div
@@ -138,15 +156,16 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
         aria-label="VIC Premier services carousel. Drag left or right, or use the arrow keys to navigate."
       >
         <div className={styles.circle} style={{ width: `${radius * 2}px`, height: `${radius * 2}px` }}>
-          {services.map((service, index) => {
-            const virtualIndex = nearestVirtualIndex(index, position, services.length);
+          {virtualCards.map((virtualIndex) => {
+            const serviceIndex = mod(virtualIndex, services.length);
+            const service = services[serviceIndex];
             const relative = virtualIndex - position;
-            const angle = relative * ROTATION_STEP;
+            const angle = relative * ANGLE_STEP;
             const radians = (angle * Math.PI) / 180;
             const x = radius + radius * Math.sin(radians);
             const y = radius - radius * Math.cos(radians);
             const visible = Math.abs(angle) <= VISIBLE_ANGLE;
-            const isActive = index === activeIndex;
+            const isActive = virtualIndex === activeVirtualIndex;
             const image = serviceImages[service.slug];
             const style = {
               "--card-x": `${x}px`,
@@ -157,7 +176,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
 
             return (
               <article
-                key={service.slug}
+                key={virtualIndex}
                 className={`${styles.cardPosition} ${visible ? styles.visible : styles.hidden} ${isActive ? styles.centered : ""}`}
                 style={style}
                 aria-hidden={!visible}
@@ -187,8 +206,8 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
       </div>
 
       <div className={styles.controls} aria-label="Service carousel controls">
-        <button type="button" onClick={() => step(-1)} aria-label="Previous service">←</button>
-        <button type="button" onClick={() => step(1)} aria-label="Next service">→</button>
+        <button type="button" onClick={() => step(-1)} aria-label="Previous service"><ArrowIcon /></button>
+        <button type="button" onClick={() => step(1)} aria-label="Next service"><ArrowIcon next /></button>
       </div>
       <span className={styles.srOnly} aria-live="polite">{services[activeIndex]?.title}</span>
     </section>
