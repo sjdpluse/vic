@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import styles from "./about.module.css";
 
 export const metadata: Metadata = {
   title: "About | VIC Premier Construction Team",
@@ -12,11 +13,11 @@ export default function AboutPage() {
   return (
     <>
       <PublicHeader />
-      <main id="main-content" className="about-page">
+      <main id="main-content" className={styles.page}>
         <section className="intro section-shell" aria-labelledby="about-title">
           <div className="section-index">01 / Studio</div>
           <div className="intro__grid">
-            <h1 id="about-title">Existing spaces, renewed with intent.</h1>
+            <h1 id="about-title" className={styles.title}>Existing spaces, renewed with intent.</h1>
             <div className="intro__copy">
               <p className="intro__lead">VIC PREMIER CONSTRUCTION TEAM delivers residential and commercial construction and renovation services across Melbourne.</p>
               <p>The work spans renovation, painting, roof restoration, gutters, tiling, rendering and general carpentry. The focus is simple: a clear scope, considered workmanship and finishes that belong to the property rather than fight it.</p>
