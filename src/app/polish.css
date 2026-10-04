@@ -1,0 +1,31 @@
+@media (max-width: 767px) {
+  .site-header {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+
+  .site-header nav {
+    position: absolute;
+    top: 66px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 10px 0 8px;
+    border-top: 1px solid rgb(20 20 20 / 12%);
+    border-bottom: 1px solid rgb(20 20 20 / 12%);
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+
+  .site-header nav::-webkit-scrollbar { display: none; }
+  .hero__copy { padding-top: 154px; }
+}
+
+@media (hover: hover) {
+  .service-row { transition: background-color 180ms ease, padding-left 180ms ease; }
+  .service-row:hover { background: rgb(255 255 255 / 4%); padding-left: 10px; }
+  .project-frame--live { transition: transform 220ms ease, box-shadow 220ms ease; }
+  .project-frame--live:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgb(0 0 0 / 10%); }
+}
