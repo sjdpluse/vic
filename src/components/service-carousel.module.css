@@ -2,19 +2,19 @@
   position: relative;
   overflow: hidden;
   background: var(--paper);
-  padding: clamp(76px, 8vw, 118px) 0 0;
+  padding: clamp(70px, 7vw, 104px) 0 0;
 }
 
 .heading {
   width: min(1180px, calc(100% - 48px));
-  margin: 0 auto clamp(46px, 5vw, 76px);
+  margin: 0 auto 34px;
   text-align: center;
 }
 
 .heading h2 {
   margin: 0 auto;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(44px, 5.6vw, 84px);
+  font-size: clamp(42px, 5vw, 76px);
   font-weight: 400;
   line-height: .96;
   letter-spacing: -.045em;
@@ -36,9 +36,7 @@
   box-shadow: inset 0 0 0 2px rgb(20 20 20 / 16%);
 }
 
-.interacting {
-  cursor: grabbing;
-}
+.interacting { cursor: grabbing; }
 
 .circle {
   position: absolute;
@@ -63,28 +61,14 @@
   height: 350px;
   transform: translate(-50%, -50%) translate(var(--card-x), var(--card-y)) rotate(var(--card-angle));
   transform-origin: 50% 50%;
-  transition:
-    transform 560ms cubic-bezier(.22, .75, .16, 1),
-    opacity 180ms ease,
-    visibility 180ms step-end;
+  transition: transform 520ms cubic-bezier(.22, .75, .16, 1), opacity 160ms ease, visibility 160ms step-end;
   pointer-events: auto;
   will-change: transform;
 }
 
-.interacting .cardPosition {
-  transition: none;
-}
-
-.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
+.interacting .cardPosition { transition: none; }
+.visible { opacity: 1; visibility: visible; }
+.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
 .card {
   position: relative;
@@ -96,9 +80,7 @@
   box-shadow: 0 8px 24px rgb(20 20 20 / 8%);
 }
 
-.centered .card {
-  box-shadow: 0 12px 34px rgb(20 20 20 / 13%);
-}
+.centered .card { box-shadow: 0 12px 34px rgb(20 20 20 / 13%); }
 
 .media {
   position: absolute;
@@ -168,18 +150,9 @@
   line-height: 1;
 }
 
-.cta span:last-child {
-  transition: transform 180ms ease;
-}
-
-.cta:hover span:last-child {
-  transform: translateX(3px);
-}
-
-.cta:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 4px;
-}
+.cta span:last-child { transition: transform 180ms ease; }
+.cta:hover span:last-child { transform: translateX(3px); }
+.cta:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 
 .controls {
   position: relative;
@@ -188,7 +161,7 @@
   justify-content: center;
   gap: 10px;
   width: fit-content;
-  margin: 40px auto 30px;
+  margin: 20px auto 30px;
   touch-action: manipulation;
 }
 
@@ -207,25 +180,9 @@
   transition: background 200ms ease;
 }
 
-.controls button svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.nextIcon {
-  transform: rotate(180deg);
-}
-
-.controls button:hover,
-.controls button:focus-visible {
-  background: #e8dfd5;
-}
-
-.controls button:focus-visible {
-  outline: 2px solid #323232;
-  outline-offset: 2px;
-}
+.controls button svg { display: block; width: 100%; height: 100%; }
+.controls button:hover, .controls button:focus-visible { background: #e8dfd5; }
+.controls button:focus-visible { outline: 2px solid #323232; outline-offset: 2px; }
 
 .srOnly {
   position: absolute;
@@ -240,113 +197,39 @@
 }
 
 @media (min-width: 769px) {
-  .stage {
-    height: 500px;
-  }
-
-  .circle {
-    top: 50%;
-  }
-
-  .controls {
-    margin-top: 20px;
-    margin-bottom: 68px;
-  }
+  .stage { height: 500px; }
+  .circle { top: 48%; }
+  .controls { margin-top: 8px; margin-bottom: 54px; }
 }
 
 @media (min-width: 769px) and (max-width: 1366px) and (orientation: landscape) {
-  .stage {
-    height: 381px;
-  }
-
-  .circle {
-    top: 46%;
-  }
-
-  .controls {
-    margin-top: 10px;
-    margin-bottom: 30px;
-  }
+  .stage { height: 381px; }
+  .circle { top: 46%; }
+  .controls { margin-top: 4px; margin-bottom: 28px; }
 }
 
 @media (min-width: 1025px) {
-  .stage {
-    height: 616px;
-  }
-
-  .circle {
-    top: 44.7%;
-  }
-
-  .cardPosition {
-    width: 370px;
-    height: 560px;
-  }
-
-  .card {
-    border-radius: 26px;
-  }
-
-  .content {
-    min-height: 44%;
-    padding: 38px 32px 32px;
-  }
-
-  .content h3 {
-    font-size: 30px;
-  }
-
-  .content p {
-    margin: 13px 0 20px;
-    font-size: 15px;
-    line-height: 1.48;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-  }
-
-  .cta {
-    gap: 8px;
-    font-size: 14px;
-  }
-
-  .controls {
-    gap: 12px;
-    margin-top: 0;
-  }
+  .stage { height: 616px; }
+  .circle { top: 44.7%; }
+  .cardPosition { width: 370px; height: 560px; }
+  .content { min-height: 44%; padding: 38px 32px 32px; }
+  .content h3 { font-size: 30px; }
+  .content p { margin: 13px 0 20px; font-size: 15px; line-height: 1.48; -webkit-line-clamp: 4; line-clamp: 4; }
+  .cta { gap: 8px; font-size: 14px; }
+  .controls { gap: 12px; margin-top: 0; }
 }
 
 @media (max-width: 600px) {
-  .section {
-    padding-top: 70px;
-  }
-
-  .heading {
-    width: calc(100% - 40px);
-    margin-bottom: 44px;
-  }
-
-  .heading h2 {
-    font-size: clamp(42px, 12vw, 58px);
-  }
-
-  .stage {
-    height: 350px;
-  }
-
-  .circle {
-    top: 50%;
-  }
-
-  .controls {
-    margin-top: 40px;
-    margin-bottom: 30px;
-  }
+  .section { padding-top: 56px; }
+  .heading { width: calc(100% - 40px); margin-bottom: 24px; }
+  .heading h2 { font-size: clamp(40px, 11vw, 54px); }
+  .stage { height: 350px; }
+  .circle { top: 50%; }
+  .controls { margin-top: 18px; margin-bottom: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cardPosition,
   .controls button,
-  .cta span:last-child {
-    transition: none;
-  }
+  .cta span:last-child { transition: none; }
 }
