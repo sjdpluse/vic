@@ -37,17 +37,13 @@ function mod(value: number, count: number) {
 }
 
 function ArrowIcon({ next = false }: { next?: boolean }) {
+  const path = next
+    ? "M34 30L27.2155 23L26 24.2542L31.5689 30L26 35.7458L27.2155 37L34 30Z"
+    : "M26 30L32.7845 23L34 24.2542L28.4311 30L34 35.7458L32.7845 37L26 30Z";
+
   return (
-    <svg
-      className={next ? styles.nextIcon : undefined}
-      width="100%"
-      height="100%"
-      viewBox="0 0 60 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path d="M26 30L32.7845 23L34 24.2542L28.4311 30L34 35.7458L32.7845 37L26 30Z" fill="currentColor" />
+    <svg width="100%" height="100%" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d={path} fill="currentColor" />
     </svg>
   );
 }
@@ -70,9 +66,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
 
   const measure = useCallback(() => {
     const width = stageRef.current?.clientWidth ?? window.innerWidth;
-    if (width > 1920) setRadius(4000);
-    else if (width > 1024) setRadius(4250);
-    else setRadius(1650);
+    setRadius(width > 1024 ? 2700 : 1650);
   }, []);
 
   useEffect(() => {
@@ -183,7 +177,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
               >
                 <div className={styles.card}>
                   <div className={styles.media}>
-                    {image ? <img src={image.src} alt={image.alt} draggable={false} loading="lazy" decoding="async" /> : null}
+                    {image ? <img src={image.src} alt={image.alt} draggable={false} loading="eager" decoding="async" /> : null}
                   </div>
                   <div className={styles.content}>
                     <h3>{service.shortTitle}</h3>
