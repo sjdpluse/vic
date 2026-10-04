@@ -2,48 +2,24 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties, MouseEvent, PointerEvent, WheelEvent } from "react";
+import type { CSSProperties, MouseEvent, PointerEvent } from "react";
 import type { ServiceDefinition } from "@/lib/services";
 import styles from "./service-carousel.module.css";
 
 type ServiceCarouselProps = { services: ServiceDefinition[] };
 
 const serviceImages: Record<string, { src: string; alt: string }> = {
-  "residential-construction-renovation": {
-    src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1400&q=84",
-    alt: "Interior framing during a residential renovation",
-  },
-  "commercial-construction-renovation": {
-    src: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1400&q=84",
-    alt: "Commercial construction site with cranes and buildings",
-  },
-  "interior-exterior-painting": {
-    src: "https://images.unsplash.com/photo-1693985120993-e9b203ce7631?auto=format&fit=crop&w=1400&q=84",
-    alt: "Painter applying paint to a wall with a roller",
-  },
-  "roof-restoration": {
-    src: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1400&q=84",
-    alt: "Residential roof prepared for restoration work",
-  },
-  gutters: {
-    src: "https://images.unsplash.com/photo-1634853982486-c06f0e17940f?auto=format&fit=crop&w=1400&q=84",
-    alt: "Rain gutter installed along a residential roof edge",
-  },
-  tiling: {
-    src: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1400&q=84",
-    alt: "Hands installing tiles during renovation work",
-  },
-  "wall-rendering": {
-    src: "https://images.unsplash.com/photo-1768839725085-829e6ac7ac26?auto=format&fit=crop&w=1400&q=84",
-    alt: "Hands applying plaster to a wall with trowels",
-  },
-  "general-carpentry": {
-    src: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1400&q=84",
-    alt: "Carpenter working with timber in a workshop",
-  },
+  "residential-construction-renovation": { src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1400&q=84", alt: "Interior framing during a residential renovation" },
+  "commercial-construction-renovation": { src: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1400&q=84", alt: "Commercial construction site with cranes and buildings" },
+  "interior-exterior-painting": { src: "https://images.unsplash.com/photo-1693985120993-e9b203ce7631?auto=format&fit=crop&w=1400&q=84", alt: "Painter applying paint to a wall with a roller" },
+  "roof-restoration": { src: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1400&q=84", alt: "Residential roof prepared for restoration work" },
+  gutters: { src: "https://images.unsplash.com/photo-1634853982486-c06f0e17940f?auto=format&fit=crop&w=1400&q=84", alt: "Rain gutter installed along a residential roof edge" },
+  tiling: { src: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1400&q=84", alt: "Hands installing tiles during renovation work" },
+  "wall-rendering": { src: "https://images.unsplash.com/photo-1768839725085-829e6ac7ac26?auto=format&fit=crop&w=1400&q=84", alt: "Hands applying plaster to a wall with trowels" },
+  "general-carpentry": { src: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1400&q=84", alt: "Carpenter working with timber in a workshop" },
 };
 
-const rotations = [-4.5, 3.2, -2.6, 4.2, -3.4, 2.8, -4, 3.5];
+const rotations = [-5, 0, 4.2, -3.2, 4.6, -4, 3.4, -2.8];
 
 export function ServiceCarousel({ services }: ServiceCarouselProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -60,31 +36,41 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
   }, []);
 
   useEffect(() => {
-    updateControls();
     const node = scrollerRef.current;
     if (!node) return;
     const observer = new ResizeObserver(updateControls);
     observer.observe(node);
-    return () => observer.disconnect();
+
+    const frame = window.requestAnimationFrame(() => {
+      const card = node.querySelector<HTMLElement>("[data-service-card]");
+      if (card && node.scrollLeft < 2) node.scrollLeft = (card.offsetWidth + 28) * 0.72;
+      updateControls();
+    });
+
+    const wheel = (event: globalThis.WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const atStart = node.scrollLeft <= 6;
+      const atEnd = node.scrollLeft >= node.scrollWidth - node.clientWidth - 6;
+      if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) return;
+      event.preventDefault();
+      node.scrollLeft += event.deltaY;
+    };
+    node.addEventListener("wheel", wheel, { passive: false });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      node.removeEventListener("wheel", wheel);
+    };
   }, [updateControls]);
 
   const step = useCallback((direction: -1 | 1) => {
     const node = scrollerRef.current;
     if (!node) return;
     const card = node.querySelector<HTMLElement>("[data-service-card]");
-    const gap = 28;
-    const distance = (card?.offsetWidth ?? node.clientWidth * 0.34) + gap;
+    const distance = (card?.offsetWidth ?? node.clientWidth * 0.34) + 28;
     node.scrollBy({ left: direction * distance, behavior: "smooth" });
   }, []);
-
-  function onWheel(event: WheelEvent<HTMLDivElement>) {
-    const node = scrollerRef.current;
-    if (!node) return;
-    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-    if ((event.deltaY < 0 && !canBack) || (event.deltaY > 0 && !canForward)) return;
-    event.preventDefault();
-    node.scrollLeft += event.deltaY;
-  }
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "touch") return;
@@ -127,19 +113,15 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
         <span className={styles.eyebrow}>01 / Services</span>
         <h2 id="service-carousel-title">Built for every stage of the work.</h2>
       </div>
-
       <div
         ref={scrollerRef}
         className={`${styles.scroller} ${dragging ? styles.dragging : ""}`}
         onScroll={updateControls}
-        onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
-        onPointerLeave={(event) => {
-          if (dragRef.current.active && event.buttons === 0) finishDrag(event);
-        }}
+        onPointerLeave={(event) => { if (dragRef.current.active && event.buttons === 0) finishDrag(event); }}
         aria-label="VIC Premier services"
       >
         <div className={styles.track}>
@@ -154,9 +136,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
                 style={{ "--card-rotation": `${rotations[index % rotations.length]}deg` } as CSSProperties}
                 onClick={guardDraggedLink}
               >
-                <div className={styles.media}>
-                  {image ? <img src={image.src} alt={image.alt} draggable={false} loading="lazy" decoding="async" /> : null}
-                </div>
+                <div className={styles.media}>{image ? <img src={image.src} alt={image.alt} draggable={false} loading="lazy" decoding="async" /> : null}</div>
                 <div className={styles.copy}>
                   <h3>{service.shortTitle}</h3>
                   <p>{service.summary}</p>
@@ -167,7 +147,6 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
           })}
         </div>
       </div>
-
       <div className={styles.controls} aria-label="Service carousel controls">
         <button type="button" onClick={() => step(-1)} disabled={!canBack} aria-label="Previous services">←</button>
         <button type="button" onClick={() => step(1)} disabled={!canForward} aria-label="Next services">→</button>
