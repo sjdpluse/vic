@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedProjectBySlug, projectMediaUrl } from "@/lib/projects";
 import styles from "./project.module.css";
@@ -17,8 +18,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <a href="/#projects" className={styles.back}>← Selected work</a>
-        <a href="/#consultation" className={styles.quote}>Request a free quote ↗</a>
+        <Link href="/#projects" className={styles.back}>← Selected work</Link>
+        <Link href="/#consultation" className={styles.quote}>Request a free quote ↗</Link>
       </header>
 
       <section className={styles.intro}>
@@ -30,10 +31,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       {project.project_media.length > 0 ? (
         <section className={styles.gallery} aria-label={`${project.title} project media`}>
           {project.project_media.map((media, index) => (
-            <figure
-              className={`${styles.media} ${index === 0 ? styles.lead : ""}`}
-              key={media.id}
-            >
+            <figure className={`${styles.media} ${index === 0 ? styles.lead : ""}`} key={media.id}>
               {media.media_type === "image" ? (
                 <img src={projectMediaUrl(media)} alt={media.alt_text || project.title} loading={index === 0 ? "eager" : "lazy"} />
               ) : (
