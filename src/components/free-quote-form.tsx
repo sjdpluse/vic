@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Script from "next/script";
 import { FormEvent, useMemo, useState } from "react";
 import { createPublicSupabaseClient } from "@/lib/supabase";
@@ -85,7 +86,7 @@ export function FreeQuoteForm() {
         <label>Preferred timeframe<input name="timeframe" placeholder="e.g. Within 1–3 months" maxLength={160} /></label>
         <label>Photos or plans <span className={styles.hint}>Up to 5 files · JPG, PNG, WebP or PDF · 10 MiB each</span><input name="attachments" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" /></label>
         {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="dark" /> : null}
-        <label className={styles.consent}><input name="consent" type="checkbox" required /><span>I consent to VIC Premier Construction Team using these details to contact me about this project.</span></label>
+        <label className={styles.consent}><input name="consent" type="checkbox" required /><span>I consent to VIC Premier Construction Team using these details to contact me about this project. See the <Link href="/privacy">privacy notice</Link>.</span></label>
         <label className={styles.honeypot} aria-hidden="true">Company<input name="company" tabIndex={-1} autoComplete="off" /></label>
         <button disabled={busy}>{busy ? "Sending enquiry…" : "Request a free quote ↗"}</button>
         {message ? <p className={styles.message} role="status">{message}</p> : null}
