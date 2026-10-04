@@ -2,37 +2,29 @@
   position: relative;
   overflow: hidden;
   background: var(--paper);
-  padding: clamp(88px, 9vw, 138px) 0 clamp(62px, 7vw, 104px);
+  padding: clamp(76px, 8vw, 118px) 0 0;
 }
 
 .heading {
   width: min(1180px, calc(100% - 48px));
-  margin: 0 auto clamp(38px, 5vw, 66px);
-}
-
-.eyebrow {
-  display: block;
-  margin-bottom: 18px;
-  color: var(--brand);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .16em;
-  text-transform: uppercase;
+  margin: 0 auto clamp(46px, 5vw, 76px);
+  text-align: center;
 }
 
 .heading h2 {
-  margin: 0;
-  max-width: 930px;
+  margin: 0 auto;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(50px, 6.6vw, 108px);
+  font-size: clamp(44px, 5.6vw, 84px);
   font-weight: 400;
-  line-height: .92;
-  letter-spacing: -.047em;
+  line-height: .96;
+  letter-spacing: -.045em;
 }
 
 .stage {
   position: relative;
-  height: clamp(720px, 55vw, 840px);
+  z-index: 1;
+  width: 100%;
+  height: 350px;
   overflow: hidden;
   cursor: grab;
   touch-action: pan-y;
@@ -41,7 +33,7 @@
 }
 
 .stage:focus-visible {
-  box-shadow: inset 0 0 0 2px rgb(20 20 20 / 18%);
+  box-shadow: inset 0 0 0 2px rgb(20 20 20 / 16%);
 }
 
 .interacting {
@@ -50,8 +42,12 @@
 
 .circle {
   position: absolute;
+  top: 50%;
   left: 50%;
-  top: clamp(300px, 22vw, 350px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -63,14 +59,14 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: clamp(300px, 23vw, 370px);
-  aspect-ratio: .72;
+  width: 235px;
+  height: 350px;
   transform: translate(-50%, -50%) translate(var(--card-x), var(--card-y)) rotate(var(--card-angle));
   transform-origin: 50% 50%;
   transition:
     transform 560ms cubic-bezier(.22, .75, .16, 1),
-    opacity 220ms ease,
-    visibility 220ms step-end;
+    opacity 180ms ease,
+    visibility 180ms step-end;
   pointer-events: auto;
   will-change: transform;
 }
@@ -95,7 +91,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 30px;
+  border-radius: 26px;
   background: #1d1d1d;
   box-shadow: 0 8px 24px rgb(20 20 20 / 8%);
 }
@@ -115,7 +111,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(0 0 0 / 2%) 30%, rgb(0 0 0 / 18%) 55%, rgb(0 0 0 / 78%) 100%);
+  background: linear-gradient(180deg, rgb(0 0 0 / 0%) 28%, rgb(0 0 0 / 12%) 50%, rgb(0 0 0 / 82%) 100%);
   pointer-events: none;
 }
 
@@ -124,6 +120,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   pointer-events: none;
   transform: scale(1.01);
 }
@@ -133,36 +130,41 @@
   z-index: 2;
   inset: auto 0 0;
   display: flex;
-  min-height: 46%;
+  min-height: 48%;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 34px 30px 30px;
+  padding: 26px 22px 22px;
   color: #fff;
 }
 
 .content h3 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(27px, 2vw, 34px);
+  font-size: 22px;
   font-weight: 400;
   line-height: 1.02;
   letter-spacing: -.035em;
 }
 
 .content p {
-  margin: 14px 0 22px;
-  color: rgb(255 255 255 / 82%);
-  font-size: 14px;
-  line-height: 1.5;
+  display: -webkit-box;
+  margin: 10px 0 16px;
+  overflow: hidden;
+  color: rgb(255 255 255 / 84%);
+  font-size: 12px;
+  line-height: 1.42;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 .cta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: fit-content;
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
 }
 
@@ -176,38 +178,52 @@
 
 .cta:focus-visible {
   outline: 2px solid #fff;
-  outline-offset: 5px;
+  outline-offset: 4px;
 }
 
 .controls {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: center;
-  gap: 14px;
-  margin-top: -6px;
+  gap: 10px;
+  width: fit-content;
+  margin: 40px auto 30px;
+  touch-action: manipulation;
 }
 
 .controls button {
-  display: grid;
-  width: 64px;
-  height: 64px;
-  place-items: center;
-  border: 2px solid #e2ddd3;
-  border-radius: 50%;
+  display: inline-flex;
+  width: 60px;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid #e8dfd5;
+  border-radius: 999px;
   background: var(--paper);
-  color: var(--ink);
-  font-size: 24px;
+  color: #323232;
   cursor: pointer;
-  transition: background 180ms ease, transform 180ms ease;
+  transition: background 200ms ease;
 }
 
-.controls button:hover {
-  background: #fff;
-  transform: translateY(-2px);
+.controls button svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.nextIcon {
+  transform: rotate(180deg);
+}
+
+.controls button:hover,
+.controls button:focus-visible {
+  background: #e8dfd5;
 }
 
 .controls button:focus-visible {
-  outline: 3px solid #fff;
-  box-shadow: 0 0 0 6px #151515;
+  outline: 2px solid #323232;
   outline-offset: 2px;
 }
 
@@ -223,84 +239,107 @@
   border: 0;
 }
 
-@media (max-width: 900px) {
-  .heading {
-    width: calc(100% - 40px);
-    margin-bottom: 32px;
-  }
-
-  .heading h2 {
-    max-width: 700px;
-    font-size: clamp(48px, 10vw, 78px);
-  }
-
+@media (min-width: 769px) {
   .stage {
-    height: 760px;
+    height: 500px;
   }
 
   .circle {
-    top: 335px;
+    top: 50%;
+  }
+
+  .controls {
+    margin-top: 20px;
+    margin-bottom: 68px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1366px) and (orientation: landscape) {
+  .stage {
+    height: 381px;
+  }
+
+  .circle {
+    top: 46%;
+  }
+
+  .controls {
+    margin-top: 10px;
+    margin-bottom: 30px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .stage {
+    height: 616px;
+  }
+
+  .circle {
+    top: 44.7%;
   }
 
   .cardPosition {
-    width: min(58vw, 390px);
-    min-width: 290px;
+    width: 370px;
+    height: 560px;
+  }
+
+  .card {
+    border-radius: 26px;
+  }
+
+  .content {
+    min-height: 44%;
+    padding: 38px 32px 32px;
+  }
+
+  .content h3 {
+    font-size: 30px;
+  }
+
+  .content p {
+    margin: 13px 0 20px;
+    font-size: 15px;
+    line-height: 1.48;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  .cta {
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .controls {
+    gap: 12px;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 600px) {
   .section {
-    padding-top: 74px;
-    padding-bottom: 54px;
+    padding-top: 70px;
   }
 
   .heading {
-    margin-bottom: 18px;
+    width: calc(100% - 40px);
+    margin-bottom: 44px;
   }
 
   .heading h2 {
-    max-width: 340px;
-    font-size: clamp(44px, 12vw, 62px);
-    line-height: .94;
+    font-size: clamp(42px, 12vw, 58px);
   }
 
   .stage {
-    height: 690px;
+    height: 350px;
   }
 
   .circle {
-    top: 302px;
-  }
-
-  .cardPosition {
-    width: min(68vw, 320px);
-    min-width: 270px;
-  }
-
-  .card {
-    border-radius: 28px;
-  }
-
-  .content {
-    min-height: 48%;
-    padding: 30px 24px 25px;
-  }
-
-  .content h3 {
-    font-size: 27px;
-  }
-
-  .content p {
-    font-size: 13px;
+    top: 50%;
   }
 
   .controls {
-    margin-top: 0;
-  }
-
-  .controls button {
-    width: 58px;
-    height: 58px;
+    margin-top: 40px;
+    margin-bottom: 30px;
   }
 }
 
