@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HeroSequence } from "@/components/hero-sequence";
+import { HomepageNavBridge } from "@/components/homepage-nav-bridge";
 import { FreeQuoteForm } from "@/components/free-quote-form";
 import { ServiceCarousel } from "@/components/service-carousel";
 import { getPublishedProjects, projectCover } from "@/lib/projects";
@@ -36,6 +37,7 @@ export default async function Home() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />
       <HeroSequence />
+      <HomepageNavBridge />
       <ServiceCarousel services={services} />
       <section className="services section-shell" id="services" aria-labelledby="services-title">
         <div className="section-heading"><div><div className="section-index section-index--light">02 / Capabilities</div><h2 id="services-title">Work that moves from structure to finish.</h2></div><p>A coordinated set of construction and finishing services for existing homes, commercial spaces and renovation projects.</p></div>
