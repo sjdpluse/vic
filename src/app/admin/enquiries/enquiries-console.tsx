@@ -7,9 +7,10 @@ import styles from "./enquiries.module.css";
 
 type Profile = { role: "admin" | "editor" | "viewer" };
 type Media = { id: string; storage_path: string; original_name: string | null; mime_type: string | null; size_bytes: number | null };
+type Status = "new" | "reviewing" | "contacted" | "closed" | "spam";
 type Enquiry = {
   id: string;
-  status: "new" | "reviewing" | "contacted" | "closed" | "spam";
+  status: Status;
   name: string;
   phone: string | null;
   email: string | null;
@@ -18,10 +19,13 @@ type Enquiry = {
   project_description: string;
   preferred_timeframe: string | null;
   created_at: string;
+  notification_status: "not_configured" | "sent" | "failed";
+  notified_at: string | null;
+  notification_error: string | null;
   enquiry_media: Media[];
 };
 
-const statuses: Enquiry["status"][] = ["new", "reviewing", "contacted", "closed", "spam"];
+const statuses: Status[] = ["new", "reviewing", "contacted", "closed", "spam"];
 
 export function EnquiriesConsole() {
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
@@ -29,12 +33,17 @@ export function EnquiriesConsole() {
   const [role, setRole] = useState<Profile["role"] | null>(null);
   const [items, setItems] = useState<Enquiry[]>([]);
   const [message, setMessage] = useState("");
+  const [filter, setFilter] = useState<Status | "all">("all");
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
+    setLoading(true);
     const { data, error } = await supabase
       .from("enquiries")
-      .select("id,status,name,phone,email,suburb_postcode,service,project_description,preferred_timeframe,created_at,enquiry_media(id,storage_path,original_name,mime_type,size_bytes)")
+      .select("id,status,name,phone,email,suburb_postcode,service,project_description,preferred_timeframe,created_at,notification_status,notified_at,notification_error,enquiry_media(id,storage_path,original_name,mime_type,size_bytes)")
       .order("created_at", { ascending: false });
+    setLoading(false);
     if (error) setMessage(error.message);
     else setItems((data ?? []) as Enquiry[]);
   }, [supabase]);
@@ -50,7 +59,19 @@ export function EnquiriesConsole() {
     });
   }, [load, supabase]);
 
-  async function updateStatus(id: string, status: Enquiry["status"]) {
+  const counts = useMemo(() => Object.fromEntries(statuses.map((status) => [status, items.filter((item) => item.status === status).length])) as Record<Status, number>, [items]);
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return items.filter((item) => {
+      if (filter !== "all" && item.status !== filter) return false;
+      if (!needle) return true;
+      return [item.name, item.phone, item.email, item.suburb_postcode, item.service, item.project_description]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle));
+    });
+  }, [filter, items, query]);
+
+  async function updateStatus(id: string, status: Status) {
     const { error } = await supabase.from("enquiries").update({ status }).eq("id", id);
     if (error) setMessage(error.message);
     else await load();
@@ -68,14 +89,24 @@ export function EnquiriesConsole() {
 
   return (
     <main className={styles.page}>
-      <header><div><p className={styles.eyebrow}>VIC PREMIER / ADMIN</p><h1>Enquiries</h1></div><a href="/admin">Projects CMS ↗</a></header>
+      <header><div><p className={styles.eyebrow}>VIC PREMIER / ADMIN</p><h1>Enquiries</h1></div><div className={styles.headerActions}><button onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh"}</button><a href="/admin">Projects CMS ↗</a></div></header>
+      <section className={styles.stats} aria-label="Enquiry status summary">
+        {statuses.map((status) => <button key={status} className={filter === status ? styles.activeStat : ""} onClick={() => setFilter(filter === status ? "all" : status)}><span>{status}</span><strong>{counts[status]}</strong></button>)}
+      </section>
+      <div className={styles.toolbar}><input type="search" placeholder="Search name, contact, suburb, service or project…" value={query} onChange={(event) => setQuery(event.target.value)} /><select value={filter} onChange={(event) => setFilter(event.target.value as Status | "all")}><option value="all">All statuses</option>{statuses.map((status)=><option key={status} value={status}>{status}</option>)}</select></div>
       {message ? <p className={styles.message}>{message}</p> : null}
       <section className={styles.list}>
-        {items.length === 0 ? <article className={styles.card}><h2>No enquiries yet</h2></article> : items.map((item) => (
+        {visible.length === 0 ? <article className={styles.card}><h2>No matching enquiries</h2></article> : visible.map((item) => (
           <article className={styles.card} key={item.id}>
-            <div className={styles.top}><div><span>{new Date(item.created_at).toLocaleString()}</span><h2>{item.name}</h2><p>{item.service || "General enquiry"}{item.suburb_postcode ? ` · ${item.suburb_postcode}` : ""}</p></div><select value={item.status} onChange={(event) => void updateStatus(item.id, event.target.value as Enquiry["status"])}>{statuses.map((status)=><option key={status}>{status}</option>)}</select></div>
+            <div className={styles.top}><div><span>{new Date(item.created_at).toLocaleString()}</span><h2>{item.name}</h2><p>{item.service || "General enquiry"}{item.suburb_postcode ? ` · ${item.suburb_postcode}` : ""}</p></div><select value={item.status} onChange={(event) => void updateStatus(item.id, event.target.value as Status)}>{statuses.map((status)=><option key={status}>{status}</option>)}</select></div>
             <p className={styles.description}>{item.project_description}</p>
-            <div className={styles.meta}><span>{item.phone || "No phone"}</span><span>{item.email || "No email"}</span><span>{item.preferred_timeframe || "No timeframe"}</span></div>
+            <div className={styles.meta}>
+              {item.phone ? <a href={`tel:${item.phone}`}>{item.phone}</a> : <span>No phone</span>}
+              {item.email ? <a href={`mailto:${item.email}`}>{item.email}</a> : <span>No email</span>}
+              <span>{item.preferred_timeframe || "No timeframe"}</span>
+              <span>Notification: {item.notification_status}{item.notified_at ? ` · ${new Date(item.notified_at).toLocaleString()}` : ""}</span>
+            </div>
+            {item.notification_error ? <p className={styles.notificationError}>{item.notification_error}</p> : null}
             {item.enquiry_media.length ? <div className={styles.attachments}>{item.enquiry_media.map((media)=><button key={media.id} onClick={() => void openAttachment(media)}>{media.original_name || "Attachment"} ↗</button>)}</div> : null}
           </article>
         ))}
