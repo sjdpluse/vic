@@ -16,7 +16,7 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
           <Link href="/#about">About</Link>
           <Link href="/#services">Services</Link>
           <Link href="/#projects">Projects</Link>
-          <Link href="/#process">Process</Link>
+          <Link href="/contact">Contact</Link>
         </nav>
         <Link className={styles.quote} href="/#consultation">Free quote <span aria-hidden="true">↗</span></Link>
         <details className={styles.mobile}>
@@ -27,6 +27,8 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
             <Link href="/#services">Services</Link>
             <Link href="/#projects">Projects</Link>
             <Link href="/#process">Process</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/privacy">Privacy</Link>
             <Link href="/#consultation">Free quote</Link>
           </nav>
         </details>
