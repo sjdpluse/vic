@@ -6,17 +6,28 @@ const maxBytes = 10 * 1024 * 1024;
 const maxFiles = 5;
 const windowMinutes = 15;
 const maxRequestsPerWindow = 5;
+const defaultAllowedOrigins = [
+  "https://vicpremier.vercel.app",
+  "https://vicpremierconstructionteam.au",
+  "https://www.vicpremierconstructionteam.au",
+];
+const defaultTurnstileHostnames = new Set([
+  "vicpremier.vercel.app",
+  "vicpremierconstructionteam.au",
+  "www.vicpremierconstructionteam.au",
+]);
 
-function corsHeaders(origin: string | null) {
+function configuredOrigins() {
   const configured = (Deno.env.get("ALLOWED_ORIGINS") || "")
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  const allowedOrigin = configured.length === 0
-    ? "*"
-    : origin && configured.includes(origin)
-      ? origin
-      : configured[0];
+  return configured.length ? configured : defaultAllowedOrigins;
+}
+
+function corsHeaders(origin: string | null) {
+  const allowed = configuredOrigins();
+  const allowedOrigin = origin && allowed.includes(origin) ? origin : allowed[0];
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -50,17 +61,25 @@ async function hashIp(ip: string) {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-async function verifyTurnstile(token: string, ip: string) {
+async function verifyTurnstile(token: string, ip: string, origin: string | null) {
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY");
   if (!secret) return true;
   if (!token) return false;
+
   const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ secret, response: token, remoteip: ip }),
   });
-  const result = await response.json() as { success?: boolean };
-  return result.success === true;
+  if (!response.ok) return false;
+
+  const result = await response.json() as { success?: boolean; hostname?: string };
+  if (result.success !== true || !result.hostname) return false;
+
+  const expectedHostname = origin ? new URL(origin).hostname : null;
+  if (expectedHostname && result.hostname !== expectedHostname) return false;
+
+  return defaultTurnstileHostnames.has(result.hostname);
 }
 
 Deno.serve(async (req: Request) => {
@@ -68,8 +87,8 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(origin) });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed." }, 405, origin);
 
-  const configuredOrigins = (Deno.env.get("ALLOWED_ORIGINS") || "").split(",").map((value) => value.trim()).filter(Boolean);
-  if (configuredOrigins.length && (!origin || !configuredOrigins.includes(origin))) {
+  const allowedOrigins = configuredOrigins();
+  if (!origin || !allowedOrigins.includes(origin)) {
     return json({ ok: false, error: "Origin not allowed." }, 403, origin);
   }
 
@@ -116,7 +135,7 @@ Deno.serve(async (req: Request) => {
     await admin.from("enquiry_rate_limits").insert({ ip_hash: ipHash });
 
     const turnstileToken = clean(form.get("cf-turnstile-response"), 4096);
-    if (!(await verifyTurnstile(turnstileToken, ip))) {
+    if (!(await verifyTurnstile(turnstileToken, ip, origin))) {
       return json({ ok: false, error: "Anti-spam verification failed. Please try again." }, 400, origin);
     }
 
