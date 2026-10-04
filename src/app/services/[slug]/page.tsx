@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getService, services } from "@/lib/services";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 import styles from "./service.module.css";
 
 type ServicePageProps = { params: Promise<{ slug: string }> };
@@ -25,12 +27,13 @@ export default async function ServicePage({ params }: ServicePageProps) {
   const service = getService(slug);
   if (!service) notFound();
 
+  const index = services.findIndex((item) => item.slug === service.slug);
+  const previous = services[(index - 1 + services.length) % services.length];
+  const next = services[(index + 1) % services.length];
+
   return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <Link href="/#services">← All services</Link>
-        <Link href="/#consultation">Request a free quote ↗</Link>
-      </header>
+    <main className={styles.page} id="main-content">
+      <PublicHeader />
       <section className={styles.hero}>
         <p className={styles.eyebrow}>VIC PREMIER / SERVICE</p>
         <h1>{service.title}</h1>
@@ -47,11 +50,12 @@ export default async function ServicePage({ params }: ServicePageProps) {
           <Link className={styles.cta} href="/#consultation">Start a project ↗</Link>
         </div>
       </section>
-      <footer className={styles.footer}>
-        <strong>VIC PREMIER CONSTRUCTION TEAM</strong>
-        <span>6 Windsor St, Hallam VIC 3803</span>
-        <span>0411 786 573</span>
-      </footer>
+      <nav className={styles.serviceNav} aria-label="Other services">
+        <Link href={`/services/${previous.slug}`}>← {previous.shortTitle}</Link>
+        <Link href="/#services">All services</Link>
+        <Link href={`/services/${next.slug}`}>{next.shortTitle} →</Link>
+      </nav>
+      <PublicFooter />
     </main>
   );
 }
