@@ -13,7 +13,7 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
           <small>CONSTRUCTION TEAM</small>
         </Link>
         <nav className={styles.nav} aria-label="Primary navigation">
-          <Link href="/#about">About</Link>
+          <Link href="/about">About</Link>
           <Link href="/#services">Services</Link>
           <Link href="/#projects">Projects</Link>
           <Link href="/contact">Contact</Link>
@@ -23,7 +23,7 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
           <summary aria-label="Open navigation menu">Menu</summary>
           <nav className={styles.panel} aria-label="Mobile navigation">
             <Link href="/">Home</Link>
-            <Link href="/#about">About</Link>
+            <Link href="/about">About</Link>
             <Link href="/#services">Services</Link>
             <Link href="/#projects">Projects</Link>
             <Link href="/#process">Process</Link>
