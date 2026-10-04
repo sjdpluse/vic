@@ -3,6 +3,7 @@ import { HeroSequence } from "@/components/hero-sequence";
 import { FreeQuoteForm } from "@/components/free-quote-form";
 import { getPublishedProjects, projectCover } from "@/lib/projects";
 import { services } from "@/lib/services";
+import studioCards from "./studio-service-cards.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,41 @@ const process = [
   ["02", "Review the scope", "We review the information provided and arrange the next practical step for the project."],
   ["03", "Quote & planning", "Once the scope is understood, the work can be discussed and quoted before proceeding."],
 ] as const;
+
+const serviceImages: Record<string, { src: string; alt: string }> = {
+  "residential-construction-renovation": {
+    src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1200&q=80",
+    alt: "Interior framing during a residential renovation",
+  },
+  "commercial-construction-renovation": {
+    src: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1200&q=80",
+    alt: "Commercial construction site with cranes and buildings",
+  },
+  "interior-exterior-painting": {
+    src: "https://images.unsplash.com/photo-1693985120993-e9b203ce7631?auto=format&fit=crop&w=1200&q=80",
+    alt: "Painter applying paint to a wall with a roller",
+  },
+  "roof-restoration": {
+    src: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1200&q=80",
+    alt: "Residential roof requiring restoration work",
+  },
+  gutters: {
+    src: "https://images.unsplash.com/photo-1634853982486-c06f0e17940f?auto=format&fit=crop&w=1200&q=80",
+    alt: "Rain gutter installed along a residential roof edge",
+  },
+  tiling: {
+    src: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1200&q=80",
+    alt: "Hands installing wall tiles during renovation work",
+  },
+  "wall-rendering": {
+    src: "https://images.unsplash.com/photo-1768839725085-829e6ac7ac26?auto=format&fit=crop&w=1200&q=80",
+    alt: "Hands applying plaster to a wall with trowels",
+  },
+  "general-carpentry": {
+    src: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1200&q=80",
+    alt: "Carpenter working with timber in a workshop",
+  },
+};
 
 function ArrowIcon() { return <span aria-hidden="true">↗</span>; }
 
@@ -41,6 +77,30 @@ export default async function Home() {
         <div className="section-index">01 / Studio</div>
         <div className="intro__grid"><h2 id="intro-title">Existing spaces, renewed with intent.</h2><div className="intro__copy"><p className="intro__lead">VIC PREMIER CONSTRUCTION TEAM delivers residential and commercial construction and renovation services across Melbourne.</p><p>The work spans renovation, painting, roof restoration, gutters, tiling, rendering and general carpentry. The focus is simple: a clear scope, considered workmanship and finishes that belong to the property rather than fight it.</p><a className="editorial-link" href="#services">Explore our services <ArrowIcon /></a></div></div>
         <div className="intro__statement" aria-hidden="true"><span>CONSTRUCT</span><i /><span>RENEW</span><i /><span>FINISH</span></div>
+        <div className={studioCards.block} aria-labelledby="studio-services-title">
+          <div className={studioCards.heading}>
+            <h3 id="studio-services-title">Services built around the work.</h3>
+            <p>Explore each capability through a focused service card, then open the full service page for more detail.</p>
+          </div>
+          <div className={studioCards.grid}>
+            {services.map((service, index) => {
+              const image = serviceImages[service.slug];
+              return (
+                <Link href={`/services/${service.slug}`} className={studioCards.card} key={service.slug}>
+                  <div className={studioCards.media}>
+                    {image ? <img src={image.src} alt={image.alt} loading="lazy" decoding="async" /> : null}
+                    <span className={studioCards.index}>{String(index + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className={studioCards.body}>
+                    <h4>{service.shortTitle}</h4>
+                    <p>{service.summary}</p>
+                    <span className={studioCards.action}>Explore service <span className={studioCards.arrow} aria-hidden="true">↗</span></span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </section>
       <section className="services section-shell" id="services" aria-labelledby="services-title">
         <div className="section-heading"><div><div className="section-index section-index--light">02 / Capabilities</div><h2 id="services-title">Work that moves from structure to finish.</h2></div><p>A coordinated set of construction and finishing services for existing homes, commercial spaces and renovation projects.</p></div>
