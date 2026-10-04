@@ -1,6 +1,9 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPublishedProjectBySlug, projectMediaUrl } from "@/lib/projects";
+import { getPublishedProjectBySlug } from "@/lib/projects";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
+import { ProjectGallery } from "@/components/project-gallery";
 import styles from "./project.module.css";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +12,16 @@ type ProjectPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const project = await getPublishedProjectBySlug(slug);
+  if (!project) return {};
+  return {
+    title: `${project.title} | VIC Premier Construction Team`,
+    description: project.summary || `Selected project by VIC Premier Construction Team.`,
+  };
+}
+
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params;
   const project = await getPublishedProjectBySlug(slug);
@@ -16,11 +29,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   if (!project) notFound();
 
   return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <Link href="/#projects" className={styles.back}>← Selected work</Link>
-        <Link href="/#consultation" className={styles.quote}>Request a free quote ↗</Link>
-      </header>
+    <main className={styles.page} id="main-content">
+      <PublicHeader />
 
       <section className={styles.intro}>
         <p className={styles.eyebrow}>VIC PREMIER / PROJECT</p>
@@ -29,18 +39,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       </section>
 
       {project.project_media.length > 0 ? (
-        <section className={styles.gallery} aria-label={`${project.title} project media`}>
-          {project.project_media.map((media, index) => (
-            <figure className={`${styles.media} ${index === 0 ? styles.lead : ""}`} key={media.id}>
-              {media.media_type === "image" ? (
-                <img src={projectMediaUrl(media)} alt={media.alt_text || project.title} loading={index === 0 ? "eager" : "lazy"} />
-              ) : (
-                <video src={projectMediaUrl(media)} controls playsInline preload="metadata" />
-              )}
-              {media.caption ? <figcaption>{media.caption}</figcaption> : null}
-            </figure>
-          ))}
-        </section>
+        <ProjectGallery projectTitle={project.title} media={project.project_media} />
       ) : null}
 
       {project.description ? (
@@ -59,6 +58,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <a href="mailto:vicpremier_constructionteam@yahoo.com">Email VIC Premier ↗</a>
         </div>
       </section>
+
+      <PublicFooter />
     </main>
   );
 }
