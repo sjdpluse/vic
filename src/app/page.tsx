@@ -39,6 +39,19 @@ export default async function Home() {
       <HeroSequence />
       <HomepageNavBridge />
       <ServiceCarousel services={services} />
+
+      <section className="intro section-shell" id="about" aria-labelledby="about-title">
+        <div className="intro__grid">
+          <h2 id="about-title">About Us</h2>
+          <div className="intro__copy">
+            <p className="intro__lead">VIC PREMIER CONSTRUCTION TEAM delivers residential and commercial construction and renovation services across Melbourne.</p>
+            <p>The work spans renovation, painting, roof restoration, gutters, tiling, rendering and general carpentry. The focus is simple: a clear scope, considered workmanship and finishes that belong to the property rather than fight it.</p>
+            <Link className="editorial-link" href="/about">More about VIC Premier <span aria-hidden="true">↗</span></Link>
+          </div>
+        </div>
+        <div className="intro__statement" aria-hidden="true"><span>CONSTRUCT</span><i /><span>RENEW</span><i /><span>FINISH</span></div>
+      </section>
+
       <section className="services section-shell" id="services" aria-labelledby="services-title">
         <div className="section-heading"><div><div className="section-index section-index--light">02 / Capabilities</div><h2 id="services-title">Work that moves from structure to finish.</h2></div><p>A coordinated set of construction and finishing services for existing homes, commercial spaces and renovation projects.</p></div>
         <div className="services__list">{services.map((service,index)=><Link href={`/services/${service.slug}`} className="service-row" key={service.slug}><span className="service-row__index">{String(index+1).padStart(2,"0")}</span><h3>{service.shortTitle}</h3><p>{service.summary}</p><span className="service-row__arrow" aria-hidden="true">↗</span></Link>)}</div>
