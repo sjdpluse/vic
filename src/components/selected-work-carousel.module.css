@@ -36,7 +36,7 @@
   gap: 42px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 24px;
+  padding: 0 42px;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   cursor: grab;
@@ -59,6 +59,8 @@
   scroll-snap-align: start;
   scroll-snap-stop: always;
   isolation: isolate;
+  will-change: transform;
+  transform-origin: 50% 50%;
 }
 
 .card::after {
@@ -216,7 +218,7 @@
   .track {
     grid-auto-columns: 430px;
     gap: 28px;
-    padding-inline: 20px;
+    padding-inline: 28px;
   }
 
   .card {
@@ -242,7 +244,7 @@
   .track {
     grid-auto-columns: min(82vw, 350px);
     gap: 18px;
-    padding-inline: 20px;
+    padding-inline: 18px;
   }
 
   .card {
