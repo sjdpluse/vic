@@ -14,6 +14,14 @@ type WorkCard = {
   alt: string;
 };
 
+type Direction = "prev" | "next";
+
+const MOTION_DURATION = 1300;
+const MOTION_STAGGER = 50;
+const MOTION_EASING = "cubic-bezier(0.65, 0, 0, 1)";
+const MOTION_FAILSAFE = 250;
+const DRAG_THRESHOLD = 5;
+
 const cards: WorkCard[] = [
   {
     title: "Residential Renovation",
@@ -63,199 +71,300 @@ const cards: WorkCard[] = [
 ];
 
 function Arrow({ next = false }: { next?: boolean }) {
-  const d = next
-    ? "M34 30L27.2155 23L26 24.2542L31.5689 30L26 35.7458L27.2155 37L34 30Z"
-    : "M26 30L32.7845 23L34 24.2542L28.4311 30L34 35.7458L32.7845 37L26 30Z";
   return (
-    <svg viewBox="0 0 60 60" fill="none" aria-hidden="true">
-      <path d={d} fill="currentColor" />
+    <svg viewBox="0 0 60 60" fill="none" aria-hidden="true" className={next ? styles.nextArrow : undefined}>
+      <path d="M26 30L32.7845 23L34 24.2542L28.4311 30L34 35.7458L32.7845 37L26 30Z" fill="currentColor" />
     </svg>
   );
-}
-
-function cardTarget(track: HTMLDivElement, card: HTMLElement) {
-  const paddingLeft = Number.parseFloat(window.getComputedStyle(track).paddingLeft) || 0;
-  return card.offsetLeft - track.offsetLeft - paddingLeft;
 }
 
 export function SelectedWorkCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
-  const dragRef = useRef({ active: false, startX: 0, startScroll: 0 });
-  const motionRef = useRef<Animation[]>([]);
-  const [index, setIndex] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  const animationsRef = useRef<Animation[]>([]);
+  const commitTimerRef = useRef<number | null>(null);
+  const animatingRef = useRef(false);
+  const dragRef = useRef({ pointerId: null as number | null, startX: 0, startScroll: 0, moved: false });
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isAtStart, setIsAtStart] = useState(true);
+  const [isAtEnd, setIsAtEnd] = useState(false);
 
-  function clearCardMotion() {
-    motionRef.current.forEach((animation) => animation.cancel());
-    motionRef.current = [];
+  function cardElements() {
+    return cardRefs.current.filter((card): card is HTMLElement => Boolean(card));
   }
 
-  function animateCardCurve(fromIndex: number, toIndex: number) {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    clearCardMotion();
+  function reducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
 
-    const direction = toIndex > fromIndex ? 1 : -1;
+  function cancelActiveAnimations() {
+    animationsRef.current.forEach((animation) => {
+      const target = animation.effect?.target;
+      if (target instanceof HTMLElement) target.style.willChange = "";
+      animation.cancel();
+    });
+    animationsRef.current = [];
+  }
 
-    cardRefs.current.forEach((card, cardIndex) => {
-      if (!card) return;
+  function checkScrollState() {
+    const track = trackRef.current;
+    if (!track) return;
+    setIsAtStart(track.scrollLeft <= 1);
+    setIsAtEnd(Math.ceil(track.scrollLeft + track.clientWidth) >= track.scrollWidth - 1);
+  }
 
-      const distanceFromTransition = Math.min(
-        Math.abs(cardIndex - fromIndex),
-        Math.abs(cardIndex - toIndex),
-      );
-      const influence = Math.max(0.18, 1 - distanceFromTransition * 0.2);
-      const isOutgoing = cardIndex === fromIndex;
-      const isIncoming = cardIndex === toIndex;
+  function snapPositions(currentScroll: number) {
+    const track = trackRef.current;
+    if (!track) return [] as number[];
+    const elements = cardElements();
+    if (!elements.length) return [] as number[];
 
-      const midY = isOutgoing
-        ? 18
-        : isIncoming
-          ? -22
-          : -10 * influence;
-      const midRotate = isOutgoing
-        ? -direction * 1.35
-        : isIncoming
-          ? direction * 1.15
-          : direction * 0.45 * influence;
-      const midScale = isIncoming ? 1.008 : 0.994;
+    const trackRect = track.getBoundingClientRect();
+    const scrollPadding = Number.parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0;
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
 
-      const animation = card.animate(
-        [
-          { transform: "translate3d(0, 0, 0) rotate(0deg) scale(1)", offset: 0 },
-          { transform: `translate3d(0, ${midY}px, 0) rotate(${midRotate}deg) scale(${midScale})`, offset: 0.46 },
-          { transform: "translate3d(0, -3px, 0) rotate(0deg) scale(1)", offset: 0.82 },
-          { transform: "translate3d(0, 0, 0) rotate(0deg) scale(1)", offset: 1 },
-        ],
-        {
-          duration: 760,
-          easing: "cubic-bezier(.22,.8,.2,1)",
-          fill: "none",
-          delay: Math.min(distanceFromTransition * 26, 78),
-        },
-      );
+    return elements
+      .map((card) => {
+        const left = card.getBoundingClientRect().left - trackRect.left + currentScroll;
+        return Math.max(0, Math.min(maxScroll, left - scrollPadding));
+      })
+      .concat(maxScroll);
+  }
 
-      motionRef.current.push(animation);
+  function findAdjacentSnap(currentScroll: number, direction: Direction) {
+    const positions = snapPositions(currentScroll);
+    const tolerance = 0.5;
+    if (!positions.length) return currentScroll;
+
+    if (direction === "next") {
+      let next = Number.POSITIVE_INFINITY;
+      positions.forEach((position) => {
+        if (position > currentScroll + tolerance && position < next) next = position;
+      });
+      return next === Number.POSITIVE_INFINITY ? currentScroll : next;
+    }
+
+    let previous = Number.NEGATIVE_INFINITY;
+    positions.forEach((position) => {
+      if (position < currentScroll - tolerance && position > previous) previous = position;
+    });
+    return previous === Number.NEGATIVE_INFINITY ? currentScroll : previous;
+  }
+
+  function findNearestSnap(currentScroll: number) {
+    const positions = snapPositions(currentScroll);
+    if (!positions.length) return currentScroll;
+    let nearest = positions[0];
+    let distance = Math.abs(nearest - currentScroll);
+    positions.forEach((position) => {
+      const nextDistance = Math.abs(position - currentScroll);
+      if (nextDistance < distance) {
+        nearest = position;
+        distance = nextDistance;
+      }
+    });
+    return nearest;
+  }
+
+  function getCardsForStep(delta: number) {
+    const track = trackRef.current;
+    if (!track) return [] as HTMLElement[];
+    const trackRect = track.getBoundingClientRect();
+    const left = delta < 0 ? trackRect.left + delta : trackRect.left;
+    const right = delta > 0 ? trackRect.right + delta : trackRect.right;
+
+    return cardElements().filter((card) => {
+      const rect = card.getBoundingClientRect();
+      return rect.right > left + 1 && rect.left < right - 1;
     });
   }
 
-  function scrollToIndex(nextIndex: number, curved = false) {
+  function commitStep(targetScroll: number) {
     const track = trackRef.current;
-    const card = cardRefs.current[nextIndex];
-    if (!track || !card) return;
+    if (!track || !animationsRef.current.length) return;
 
-    const next = Math.max(0, Math.min(cards.length - 1, nextIndex));
-    const targetCard = cardRefs.current[next];
-    if (!targetCard) return;
+    if (commitTimerRef.current !== null) {
+      window.clearTimeout(commitTimerRef.current);
+      commitTimerRef.current = null;
+    }
 
-    if (curved && next !== index) animateCardCurve(index, next);
+    track.scrollLeft = targetScroll;
+    cancelActiveAnimations();
+    window.requestAnimationFrame(() => {
+      animatingRef.current = false;
+      setIsAnimating(false);
+      checkScrollState();
+    });
+  }
 
-    track.scrollTo({ left: cardTarget(track, targetCard), behavior: "smooth" });
-    setIndex(next);
+  function stepBy(direction: Direction) {
+    const track = trackRef.current;
+    if (!track || animatingRef.current || isDragging) return;
+
+    const targetScroll = findAdjacentSnap(track.scrollLeft, direction);
+    const delta = targetScroll - track.scrollLeft;
+    if (delta === 0) return;
+
+    const affectedCards = reducedMotion() ? [] : getCardsForStep(delta);
+    if (!affectedCards.length) {
+      track.scrollBy({ left: delta, behavior: "auto" });
+      window.requestAnimationFrame(checkScrollState);
+      return;
+    }
+
+    const orderedCards = direction === "next" ? affectedCards : [...affectedCards].reverse();
+    animatingRef.current = true;
+    setIsAnimating(true);
+
+    animationsRef.current = orderedCards.map((card, order) => {
+      card.style.willChange = "transform";
+      return card.animate(
+        [
+          { transform: "translateX(0)" },
+          { transform: `translateX(${-delta}px)` },
+        ],
+        {
+          duration: MOTION_DURATION,
+          delay: order * MOTION_STAGGER,
+          easing: MOTION_EASING,
+          fill: "forwards",
+        },
+      );
+    });
+
+    const totalDuration = MOTION_DURATION + (orderedCards.length - 1) * MOTION_STAGGER;
+    commitTimerRef.current = window.setTimeout(() => {
+      if (animationsRef.current.length) commitStep(targetScroll);
+    }, totalDuration + MOTION_FAILSAFE);
+
+    animationsRef.current.at(-1)?.finished
+      .then(() => commitStep(targetScroll))
+      .catch(() => undefined);
   }
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
-    let frame = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const trackLeft = track.scrollLeft;
-        let closest = 0;
-        let distance = Number.POSITIVE_INFINITY;
-
-        cardRefs.current.forEach((card, cardIndex) => {
-          if (!card) return;
-          const delta = Math.abs(cardTarget(track, card) - trackLeft);
-          if (delta < distance) {
-            closest = cardIndex;
-            distance = delta;
-          }
-        });
-
-        setIndex(closest);
-      });
-    };
-
+    const onScroll = () => checkScrollState();
+    const onResize = () => checkScrollState();
     track.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    checkScrollState();
+
     return () => {
-      cancelAnimationFrame(frame);
       track.removeEventListener("scroll", onScroll);
-      clearCardMotion();
+      window.removeEventListener("resize", onResize);
+      if (commitTimerRef.current !== null) window.clearTimeout(commitTimerRef.current);
+      cancelActiveAnimations();
     };
   }, []);
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (event.pointerType === "touch" || animatingRef.current || event.button !== 0) return;
     const track = trackRef.current;
     if (!track) return;
-    clearCardMotion();
-    dragRef.current = { active: true, startX: event.clientX, startScroll: track.scrollLeft };
-    setDragging(true);
-    track.setPointerCapture(event.pointerId);
+    dragRef.current = { pointerId: event.pointerId, startX: event.clientX, startScroll: track.scrollLeft, moved: false };
   }
 
   function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
     const track = trackRef.current;
-    if (!track || !dragRef.current.active) return;
+    if (!track || dragRef.current.pointerId !== event.pointerId) return;
+
     const delta = event.clientX - dragRef.current.startX;
+    if (!dragRef.current.moved) {
+      if (Math.abs(delta) < DRAG_THRESHOLD) return;
+      dragRef.current.moved = true;
+      setIsDragging(true);
+      track.setPointerCapture(event.pointerId);
+    }
+
     track.scrollLeft = dragRef.current.startScroll - delta;
   }
 
-  function endPointer(event: React.PointerEvent<HTMLDivElement>) {
+  function onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
     const track = trackRef.current;
-    if (!track || !dragRef.current.active) return;
-    dragRef.current.active = false;
-    setDragging(false);
+    if (!track || dragRef.current.pointerId !== event.pointerId) return;
+
     if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
-    scrollToIndex(index, false);
+    dragRef.current.pointerId = null;
+
+    if (!dragRef.current.moved) return;
+
+    const preventClick = (clickEvent: MouseEvent) => {
+      clickEvent.preventDefault();
+      clickEvent.stopPropagation();
+    };
+    track.addEventListener("click", preventClick, { capture: true, once: true });
+    window.setTimeout(() => track.removeEventListener("click", preventClick, { capture: true }), 0);
+
+    const target = findNearestSnap(track.scrollLeft);
+    setIsDragging(false);
+    dragRef.current.moved = false;
+
+    if (target !== track.scrollLeft) {
+      track.scrollTo({ left: target, behavior: reducedMotion() ? "auto" : "smooth" });
+    } else {
+      checkScrollState();
+    }
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      stepBy("prev");
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      stepBy("next");
+    }
   }
 
   return (
-    <section className={styles.section} id="projects" aria-labelledby="selected-work-title">
+    <section className={styles.section} id="projects" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
       <div className={styles.heading}>
         <h2 id="selected-work-title">Selected Work</h2>
         <p>Before-and-after transformations will live here. The current imagery is temporary and will be replaced with verified client project composites.</p>
       </div>
 
-      <div
-        ref={trackRef}
-        className={`${styles.track} ${dragging ? styles.dragging : ""}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endPointer}
-        onPointerCancel={endPointer}
-        aria-label="Selected work carousel"
-      >
-        {cards.map((card, cardIndex) => (
-          <article
-            key={card.title}
-            ref={(node) => { cardRefs.current[cardIndex] = node; }}
-            className={styles.card}
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`${cardIndex + 1} of ${cards.length}`}
-          >
-            <img className={styles.media} src={card.image} alt={card.alt} draggable={false} loading="eager" decoding="async" />
-            <div className={styles.pills}>
-              <div className={styles.pill}>
-                <span>{card.label}</span>
-                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8H13.5M9 4L13.5 8L9 12" /></svg>
+      <div className={styles.carouselInner}>
+        <div
+          ref={trackRef}
+          className={`${styles.track} ${isAnimating ? styles.animating : ""} ${isDragging ? styles.dragging : ""}`}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          aria-label="Selected work carousel"
+        >
+          {cards.map((card, cardIndex) => (
+            <article
+              key={card.title}
+              ref={(node) => { cardRefs.current[cardIndex] = node; }}
+              className={styles.card}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${cardIndex + 1} of ${cards.length}`}
+            >
+              <img className={styles.media} src={card.image} alt={card.alt} draggable={false} loading="eager" decoding="async" />
+              <div className={styles.pills}>
+                <div className={styles.pill}>
+                  <span>{card.label}</span>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8H13.5M9 4L13.5 8L9 12" /></svg>
+                </div>
+                <div className={styles.pill}>{card.secondary}</div>
               </div>
-              <div className={styles.pill}>{card.secondary}</div>
-            </div>
-            <h3>{card.title}</h3>
-            <div className={styles.description}><p>{card.description}</p></div>
-            <Link className={styles.cta} href={card.href}>View service</Link>
-          </article>
-        ))}
-      </div>
+              <h3>{card.title}</h3>
+              <div className={styles.description}><p>{card.description}</p></div>
+              <Link className={styles.cta} href={card.href}>View service</Link>
+            </article>
+          ))}
+        </div>
 
-      <div className={styles.controls} aria-label="Selected work carousel controls">
-        <button type="button" className={styles.control} onClick={() => scrollToIndex(index - 1, true)} disabled={index === 0} aria-label="Previous card"><Arrow /></button>
-        <button type="button" className={styles.control} onClick={() => scrollToIndex(index + 1, true)} disabled={index === cards.length - 1} aria-label="Next card"><Arrow next /></button>
+        <div className={styles.controls} aria-label="Selected work carousel controls">
+          <button type="button" className={styles.control} onClick={() => stepBy("prev")} disabled={isAtStart || isAnimating} aria-label="Previous card"><Arrow /></button>
+          <button type="button" className={styles.control} onClick={() => stepBy("next")} disabled={isAtEnd || isAnimating} aria-label="Next card"><Arrow next /></button>
+        </div>
       </div>
     </section>
   );
