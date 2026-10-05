@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminPortalNav } from "../admin-portal-nav";
 import { EnquiriesConsole } from "./enquiries-console";
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function EnquiriesPage() {
-  return <EnquiriesConsole />;
+  return (
+    <>
+      <AdminPortalNav />
+      <EnquiriesConsole />
+    </>
+  );
 }
