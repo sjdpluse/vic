@@ -10,22 +10,6 @@ import {
   type HeroProfile,
 } from "@/lib/hero-assets";
 
-const beats = [
-  { at: 0, label: "Existing condition" },
-  { at: 0.18, label: "Roof restoration" },
-  { at: 0.42, label: "Exterior renewal" },
-  { at: 0.62, label: "Render & finish" },
-  { at: 0.82, label: "Renewed" },
-] as const;
-
-function beatIndex(progress: number) {
-  let active = 0;
-  for (let index = 0; index < beats.length; index += 1) {
-    if (progress >= beats[index].at) active = index;
-  }
-  return active;
-}
-
 function nearestLoaded(
   requested: number,
   loaded: Map<number, HTMLImageElement>,
@@ -67,7 +51,6 @@ export function HeroSequence() {
   const canvasReadyRef = useRef(false);
   const profileRef = useRef<HeroProfile | null>(null);
   const [manifest, setManifest] = useState<HeroManifest | null>(null);
-  const [activeBeat, setActiveBeat] = useState(0);
   const [canvasReady, setCanvasReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [profileName, setProfileName] = useState<"desktop" | "mobile">("desktop");
@@ -303,10 +286,7 @@ export function HeroSequence() {
   }, [enqueue, manifest, preloadAround]);
 
   useEffect(() => {
-    if (!manifest || !profileRef.current || reducedMotion) {
-      if (reducedMotion) setActiveBeat(beats.length - 1);
-      return;
-    }
+    if (!manifest || !profileRef.current || reducedMotion) return;
 
     gsap.registerPlugin(ScrollTrigger);
 
@@ -359,9 +339,6 @@ export function HeroSequence() {
       const position = progress * (profile.frameCount - 1);
       desiredPositionRef.current = position;
       preloadCorridor(renderedPositionRef.current, position);
-
-      const nextBeat = beatIndex(progress);
-      setActiveBeat((current) => (current === nextBeat ? current : nextBeat));
 
       const rise = gsap.utils.interpolate(8, 0, progress);
       const scale = gsap.utils.interpolate(0.96, 1.015, progress);
@@ -461,7 +438,6 @@ export function HeroSequence() {
         </header>
 
         <div className="hero__copy" ref={copyRef}>
-          <p className="hero__kicker">Melbourne · Construction & renovation</p>
           <h1 id="hero-title">
             Build. Renovate.
             <br />
@@ -498,19 +474,6 @@ export function HeroSequence() {
             height={720}
             aria-hidden="true"
           />
-        </div>
-
-        <div className="hero__beat" aria-hidden="true">
-          <span className="hero__beat-index">0{activeBeat + 1}</span>
-          <span className="hero__beat-rule" />
-          <span key={activeBeat} className="hero__beat-label">
-            {beats[activeBeat].label}
-          </span>
-        </div>
-
-        <div className="hero__scroll-note" aria-hidden="true">
-          <span>Scroll to renovate</span>
-          <i />
         </div>
       </div>
     </section>
