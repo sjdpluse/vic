@@ -83,31 +83,72 @@ export function EnquiriesConsole() {
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
-  if (!session) return <main className={styles.shell}><p>Sign in through <a href="/admin">/admin</a> first.</p></main>;
+  if (!session) return <main className={styles.shell}><p>Sign in through <a href="/admin">the Projects admin</a> first.</p></main>;
   if (role === null) return <main className={styles.shell}><p>Loading account…</p></main>;
   if (role !== "admin") return <main className={styles.shell}><p>Admin access is required for enquiries.</p></main>;
 
   return (
     <main className={styles.page}>
-      <header><div><p className={styles.eyebrow}>VIC PREMIER / ADMIN</p><h1>Enquiries</h1></div><div className={styles.headerActions}><button onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh"}</button><a href="/admin">Projects CMS ↗</a></div></header>
+      <header>
+        <div>
+          <p className={styles.eyebrow}>VIC PREMIER / ADMIN PORTAL</p>
+          <h1>Enquiries</h1>
+        </div>
+        <div className={styles.headerActions}>
+          <button onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh enquiries"}</button>
+        </div>
+      </header>
+
       <section className={styles.stats} aria-label="Enquiry status summary">
-        {statuses.map((status) => <button key={status} className={filter === status ? styles.activeStat : ""} onClick={() => setFilter(filter === status ? "all" : status)}><span>{status}</span><strong>{counts[status]}</strong></button>)}
+        {statuses.map((status) => (
+          <button key={status} className={filter === status ? styles.activeStat : ""} onClick={() => setFilter(filter === status ? "all" : status)}>
+            <span>{status}</span>
+            <strong>{counts[status]}</strong>
+          </button>
+        ))}
       </section>
-      <div className={styles.toolbar}><input type="search" placeholder="Search name, contact, suburb, service or project…" value={query} onChange={(event) => setQuery(event.target.value)} /><select value={filter} onChange={(event) => setFilter(event.target.value as Status | "all")}><option value="all">All statuses</option>{statuses.map((status)=><option key={status} value={status}>{status}</option>)}</select></div>
+
+      <div className={styles.toolbar}>
+        <input type="search" placeholder="Search name, contact, suburb, service or project…" value={query} onChange={(event) => setQuery(event.target.value)} />
+        <select value={filter} onChange={(event) => setFilter(event.target.value as Status | "all")}>
+          <option value="all">All statuses</option>
+          {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+        </select>
+      </div>
+
       {message ? <p className={styles.message}>{message}</p> : null}
+
       <section className={styles.list}>
-        {visible.length === 0 ? <article className={styles.card}><h2>No matching enquiries</h2></article> : visible.map((item) => (
+        {visible.length === 0 ? (
+          <article className={styles.card}><h2>No matching enquiries</h2></article>
+        ) : visible.map((item) => (
           <article className={styles.card} key={item.id}>
-            <div className={styles.top}><div><span>{new Date(item.created_at).toLocaleString()}</span><h2>{item.name}</h2><p>{item.service || "General enquiry"}{item.suburb_postcode ? ` · ${item.suburb_postcode}` : ""}</p></div><select value={item.status} onChange={(event) => void updateStatus(item.id, event.target.value as Status)}>{statuses.map((status)=><option key={status}>{status}</option>)}</select></div>
+            <div className={styles.top}>
+              <div>
+                <span>{new Date(item.created_at).toLocaleString()}</span>
+                <h2>{item.name}</h2>
+                <p>{item.service || "General enquiry"}{item.suburb_postcode ? ` · ${item.suburb_postcode}` : ""}</p>
+              </div>
+              <select value={item.status} onChange={(event) => void updateStatus(item.id, event.target.value as Status)} aria-label={`Status for ${item.name}`}>
+                {statuses.map((status) => <option key={status}>{status}</option>)}
+              </select>
+            </div>
+
             <p className={styles.description}>{item.project_description}</p>
+
             <div className={styles.meta}>
               {item.phone ? <a href={`tel:${item.phone}`}>{item.phone}</a> : <span>No phone</span>}
               {item.email ? <a href={`mailto:${item.email}`}>{item.email}</a> : <span>No email</span>}
               <span>{item.preferred_timeframe || "No timeframe"}</span>
               <span>Notification: {item.notification_status}{item.notified_at ? ` · ${new Date(item.notified_at).toLocaleString()}` : ""}</span>
             </div>
+
             {item.notification_error ? <p className={styles.notificationError}>{item.notification_error}</p> : null}
-            {item.enquiry_media.length ? <div className={styles.attachments}>{item.enquiry_media.map((media)=><button key={media.id} onClick={() => void openAttachment(media)}>{media.original_name || "Attachment"} ↗</button>)}</div> : null}
+            {item.enquiry_media.length ? (
+              <div className={styles.attachments}>
+                {item.enquiry_media.map((media) => <button key={media.id} onClick={() => void openAttachment(media)}>{media.original_name || "Attachment"} ↗</button>)}
+              </div>
+            ) : null}
           </article>
         ))}
       </section>
