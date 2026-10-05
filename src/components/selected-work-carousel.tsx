@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./selected-work-carousel.module.css";
 
 type WorkCard = {
@@ -73,21 +73,86 @@ function Arrow({ next = false }: { next?: boolean }) {
   );
 }
 
+function cardTarget(track: HTMLDivElement, card: HTMLElement) {
+  const paddingLeft = Number.parseFloat(window.getComputedStyle(track).paddingLeft) || 0;
+  return card.offsetLeft - track.offsetLeft - paddingLeft;
+}
+
 export function SelectedWorkCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const dragRef = useRef({ active: false, startX: 0, startScroll: 0 });
+  const motionRef = useRef<Animation[]>([]);
   const [index, setIndex] = useState(0);
   const [dragging, setDragging] = useState(false);
 
-  const scrollToIndex = useCallback((nextIndex: number) => {
+  function clearCardMotion() {
+    motionRef.current.forEach((animation) => animation.cancel());
+    motionRef.current = [];
+  }
+
+  function animateCardCurve(fromIndex: number, toIndex: number) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    clearCardMotion();
+
+    const direction = toIndex > fromIndex ? 1 : -1;
+
+    cardRefs.current.forEach((card, cardIndex) => {
+      if (!card) return;
+
+      const distanceFromTransition = Math.min(
+        Math.abs(cardIndex - fromIndex),
+        Math.abs(cardIndex - toIndex),
+      );
+      const influence = Math.max(0.18, 1 - distanceFromTransition * 0.2);
+      const isOutgoing = cardIndex === fromIndex;
+      const isIncoming = cardIndex === toIndex;
+
+      const midY = isOutgoing
+        ? 18
+        : isIncoming
+          ? -22
+          : -10 * influence;
+      const midRotate = isOutgoing
+        ? -direction * 1.35
+        : isIncoming
+          ? direction * 1.15
+          : direction * 0.45 * influence;
+      const midScale = isIncoming ? 1.008 : 0.994;
+
+      const animation = card.animate(
+        [
+          { transform: "translate3d(0, 0, 0) rotate(0deg) scale(1)", offset: 0 },
+          { transform: `translate3d(0, ${midY}px, 0) rotate(${midRotate}deg) scale(${midScale})`, offset: 0.46 },
+          { transform: "translate3d(0, -3px, 0) rotate(0deg) scale(1)", offset: 0.82 },
+          { transform: "translate3d(0, 0, 0) rotate(0deg) scale(1)", offset: 1 },
+        ],
+        {
+          duration: 760,
+          easing: "cubic-bezier(.22,.8,.2,1)",
+          fill: "none",
+          delay: Math.min(distanceFromTransition * 26, 78),
+        },
+      );
+
+      motionRef.current.push(animation);
+    });
+  }
+
+  function scrollToIndex(nextIndex: number, curved = false) {
     const track = trackRef.current;
     const card = cardRefs.current[nextIndex];
     if (!track || !card) return;
-    const left = card.offsetLeft - track.offsetLeft;
-    track.scrollTo({ left, behavior: "smooth" });
-    setIndex(nextIndex);
-  }, []);
+
+    const next = Math.max(0, Math.min(cards.length - 1, nextIndex));
+    const targetCard = cardRefs.current[next];
+    if (!targetCard) return;
+
+    if (curved && next !== index) animateCardCurve(index, next);
+
+    track.scrollTo({ left: cardTarget(track, targetCard), behavior: "smooth" });
+    setIndex(next);
+  }
 
   useEffect(() => {
     const track = trackRef.current;
@@ -100,14 +165,16 @@ export function SelectedWorkCarousel() {
         const trackLeft = track.scrollLeft;
         let closest = 0;
         let distance = Number.POSITIVE_INFINITY;
+
         cardRefs.current.forEach((card, cardIndex) => {
           if (!card) return;
-          const delta = Math.abs(card.offsetLeft - track.offsetLeft - trackLeft);
+          const delta = Math.abs(cardTarget(track, card) - trackLeft);
           if (delta < distance) {
             closest = cardIndex;
             distance = delta;
           }
         });
+
         setIndex(closest);
       });
     };
@@ -116,6 +183,7 @@ export function SelectedWorkCarousel() {
     return () => {
       cancelAnimationFrame(frame);
       track.removeEventListener("scroll", onScroll);
+      clearCardMotion();
     };
   }, []);
 
@@ -123,6 +191,7 @@ export function SelectedWorkCarousel() {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const track = trackRef.current;
     if (!track) return;
+    clearCardMotion();
     dragRef.current = { active: true, startX: event.clientX, startScroll: track.scrollLeft };
     setDragging(true);
     track.setPointerCapture(event.pointerId);
@@ -141,7 +210,7 @@ export function SelectedWorkCarousel() {
     dragRef.current.active = false;
     setDragging(false);
     if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
-    scrollToIndex(index);
+    scrollToIndex(index, false);
   }
 
   return (
@@ -185,8 +254,8 @@ export function SelectedWorkCarousel() {
       </div>
 
       <div className={styles.controls} aria-label="Selected work carousel controls">
-        <button type="button" className={styles.control} onClick={() => scrollToIndex(Math.max(0, index - 1))} disabled={index === 0} aria-label="Previous card"><Arrow /></button>
-        <button type="button" className={styles.control} onClick={() => scrollToIndex(Math.min(cards.length - 1, index + 1))} disabled={index === cards.length - 1} aria-label="Next card"><Arrow next /></button>
+        <button type="button" className={styles.control} onClick={() => scrollToIndex(index - 1, true)} disabled={index === 0} aria-label="Previous card"><Arrow /></button>
+        <button type="button" className={styles.control} onClick={() => scrollToIndex(index + 1, true)} disabled={index === cards.length - 1} aria-label="Next card"><Arrow next /></button>
       </div>
     </section>
   );
