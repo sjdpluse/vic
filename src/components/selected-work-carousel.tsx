@@ -99,10 +99,9 @@ export function SelectedWorkCarousel() {
   }
 
   function cancelActiveAnimations() {
-    animationsRef.current.forEach((animation) => {
-      const target = animation.effect?.target;
-      if (target instanceof HTMLElement) target.style.willChange = "";
-      animation.cancel();
+    animationsRef.current.forEach((animation) => animation.cancel());
+    cardElements().forEach((card) => {
+      card.style.willChange = "";
     });
     animationsRef.current = [];
   }
