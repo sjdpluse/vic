@@ -18,7 +18,7 @@ import styles from "./service-carousel.module.css";
 type ServiceCarouselProps = { services: ServiceDefinition[] };
 
 const ANGLE_STEP = 10;
-const VISIBLE_ANGLE = 30.1;
+const VISIBLE_ANGLE = 20.1;
 const BUFFER = 4;
 const MOTION_DURATION = 1300;
 const MOTION_STAGGER = 50;
