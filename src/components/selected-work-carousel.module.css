@@ -1,14 +1,14 @@
 .section {
   position: relative;
   overflow: hidden;
-  padding: clamp(86px, 10vw, 150px) 0 clamp(42px, 5vw, 76px);
+  padding: clamp(86px, 10vw, 150px) 0 68px;
   background: var(--paper);
   color: var(--ink);
 }
 
 .heading {
   width: min(1180px, calc(100% - 48px));
-  margin: 0 auto clamp(48px, 6vw, 88px);
+  margin: 0 auto 58px;
   text-align: center;
 }
 
@@ -32,8 +32,8 @@
 .track {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(0, calc((100vw - 96px - 48px) / 3));
-  gap: 24px;
+  grid-auto-columns: 510px;
+  gap: 42px;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0 24px;
@@ -50,7 +50,8 @@
 
 .card {
   position: relative;
-  min-height: 660px;
+  width: 510px;
+  height: 706px;
   overflow: hidden;
   border-radius: 42px;
   background: #171717;
@@ -92,7 +93,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 30px 30px 0;
+  padding: 32px 32px 0;
 }
 
 .pill {
@@ -121,21 +122,22 @@
 
 .card h3 {
   position: absolute;
-  left: 30px;
-  right: 30px;
+  left: 32px;
+  right: 32px;
   bottom: 128px;
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(34px, 3vw, 50px);
+  font-size: 48px;
   font-weight: 400;
   line-height: 1;
   letter-spacing: -.045em;
+  transition: transform 360ms cubic-bezier(.16,1,.3,1);
 }
 
 .description {
   position: absolute;
-  left: 30px;
-  right: 30px;
+  left: 32px;
+  right: 32px;
   bottom: 72px;
   max-width: 410px;
   opacity: 0;
@@ -161,19 +163,15 @@
   transform: translateY(-44px);
 }
 
-.card h3 {
-  transition: transform 360ms cubic-bezier(.16,1,.3,1);
-}
-
 .cta {
   position: absolute;
-  left: 30px;
+  left: 32px;
   bottom: 30px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-width: 130px;
   min-height: 48px;
+  align-items: center;
+  justify-content: center;
   padding: 0 24px;
   border: 2px solid rgb(255 255 255 / 28%);
   border-radius: 999px;
@@ -207,36 +205,31 @@
   transition: background 180ms ease, opacity 180ms ease;
 }
 
-.control svg {
-  width: 100%;
-  height: 100%;
-}
+.control svg { width: 100%; height: 100%; }
 
 .control:hover:not(:disabled),
-.control:focus-visible:not(:disabled) {
-  background: #e8dfd5;
-}
+.control:focus-visible:not(:disabled) { background: #e8dfd5; }
 
-.control:disabled {
-  opacity: .3;
-  cursor: not-allowed;
-}
+.control:disabled { opacity: .3; cursor: not-allowed; }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .track {
-    grid-auto-columns: minmax(0, 62vw);
-    gap: 18px;
+    grid-auto-columns: 430px;
+    gap: 28px;
     padding-inline: 20px;
   }
 
   .card {
-    min-height: 580px;
-    border-radius: 34px;
+    width: 430px;
+    height: 596px;
+    border-radius: 36px;
   }
+
+  .card h3 { font-size: 42px; }
 }
 
-@media (max-width: 640px) {
-  .section { padding-top: 72px; }
+@media (max-width: 760px) {
+  .section { padding-top: 72px; padding-bottom: 48px; }
 
   .heading {
     width: calc(100% - 40px);
@@ -247,14 +240,16 @@
   .heading p { margin-top: 18px; font-size: 13px; }
 
   .track {
-    grid-auto-columns: minmax(0, 82vw);
-    gap: 14px;
+    grid-auto-columns: min(82vw, 350px);
+    gap: 18px;
     padding-inline: 20px;
   }
 
   .card {
-    min-height: 500px;
-    border-radius: 28px;
+    width: min(82vw, 350px);
+    height: min(113.5vw, 484px);
+    min-height: 0;
+    border-radius: 30px;
   }
 
   .pills { padding: 22px 22px 0; gap: 8px; }
@@ -263,7 +258,7 @@
   .card h3 { left: 22px; right: 22px; bottom: 108px; font-size: 34px; }
   .description { left: 22px; right: 22px; bottom: 66px; }
   .description p { font-size: 12px; }
-  .cta { left: 22px; bottom: 22px; min-height: 44px; min-width: 118px; padding-inline: 20px; font-size: 13px; }
+  .cta { left: 22px; bottom: 22px; min-width: 118px; min-height: 44px; padding-inline: 20px; font-size: 13px; }
 
   .controls { margin-top: 28px; }
   .control { width: 56px; height: 56px; }
