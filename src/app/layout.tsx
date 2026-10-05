@@ -3,6 +3,7 @@ import { Playfair_Display } from "next/font/google";
 import "./globals.css";
 import "./polish.css";
 import "./hero-brand.css";
+import "./typography.css";
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
