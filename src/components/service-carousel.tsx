@@ -20,6 +20,9 @@ type ServiceCarouselProps = { services: ServiceDefinition[] };
 const ANGLE_STEP = 10;
 const VISIBLE_ANGLE = 30.1;
 const BUFFER = 4;
+const MOTION_DURATION = 1300;
+const MOTION_STAGGER = 50;
+const MOTION_FAILSAFE = 250;
 
 const serviceImages: Record<string, { src: string; alt: string }> = {
   "residential-construction-renovation": { src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1400&q=84", alt: "Interior framing during a residential renovation" },
@@ -51,9 +54,12 @@ function ArrowIcon({ next = false }: { next?: boolean }) {
 export function ServiceCarousel({ services }: ServiceCarouselProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, startX: 0, startPosition: 0, moved: false });
+  const motionTimerRef = useRef<number | null>(null);
   const [position, setPosition] = useState(0);
   const [radius, setRadius] = useState(1650);
   const [interacting, setInteracting] = useState(false);
+  const [animating, setAnimating] = useState(false);
+  const [motionDirection, setMotionDirection] = useState<-1 | 0 | 1>(0);
 
   const activeVirtualIndex = Math.round(position);
   const activeIndex = services.length ? mod(activeVirtualIndex, services.length) : 0;
@@ -78,10 +84,26 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     return () => observer.disconnect();
   }, [measure]);
 
-  const step = useCallback((direction: -1 | 1) => {
-    setInteracting(false);
-    setPosition((current) => Math.round(current) + direction);
+  useEffect(() => () => {
+    if (motionTimerRef.current !== null) window.clearTimeout(motionTimerRef.current);
   }, []);
+
+  const step = useCallback((direction: -1 | 1) => {
+    if (animating) return;
+
+    if (motionTimerRef.current !== null) window.clearTimeout(motionTimerRef.current);
+    setInteracting(false);
+    setMotionDirection(direction);
+    setAnimating(true);
+    setPosition((current) => Math.round(current) + direction);
+
+    const totalDuration = MOTION_DURATION + (BUFFER * 2 + 1) * MOTION_STAGGER;
+    motionTimerRef.current = window.setTimeout(() => {
+      setAnimating(false);
+      setMotionDirection(0);
+      motionTimerRef.current = null;
+    }, totalDuration + MOTION_FAILSAFE);
+  }, [animating]);
 
   function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") {
@@ -95,9 +117,10 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
   }
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (animating || (event.pointerType === "mouse" && event.button !== 0)) return;
     const node = stageRef.current;
     if (!node) return;
+    setMotionDirection(0);
     dragRef.current = { active: true, startX: event.clientX, startPosition: position, moved: false };
     setInteracting(true);
     node.setPointerCapture(event.pointerId);
@@ -133,14 +156,14 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
   if (!services.length) return null;
 
   return (
-    <section className={styles.section} aria-labelledby="service-carousel-title">
+    <section className={styles.section} id="services" aria-labelledby="service-carousel-title">
       <div className={styles.heading}>
         <h2 id="service-carousel-title">Our Services</h2>
       </div>
 
       <div
         ref={stageRef}
-        className={`${styles.stage} ${interacting ? styles.interacting : ""}`}
+        className={`${styles.stage} ${interacting ? styles.interacting : ""} ${animating ? styles.animating : ""}`}
         tabIndex={0}
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
@@ -161,10 +184,16 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
             const visible = Math.abs(angle) <= VISIBLE_ANGLE;
             const isActive = virtualIndex === activeVirtualIndex;
             const image = serviceImages[service.slug];
+            const staggerOrder = motionDirection === 1
+              ? Math.max(0, relative + BUFFER)
+              : motionDirection === -1
+                ? Math.max(0, BUFFER - relative)
+                : 0;
             const style = {
               "--card-x": `${x}px`,
               "--card-y": `${y}px`,
               "--card-angle": `${angle}deg`,
+              "--card-delay": `${staggerOrder * MOTION_STAGGER}ms`,
               zIndex: 100 - Math.round(Math.abs(angle)),
             } as CSSProperties;
 
@@ -200,8 +229,8 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
       </div>
 
       <div className={styles.controls} aria-label="Service carousel controls">
-        <button type="button" onClick={() => step(-1)} aria-label="Previous service"><ArrowIcon /></button>
-        <button type="button" onClick={() => step(1)} aria-label="Next service"><ArrowIcon next /></button>
+        <button type="button" onClick={() => step(-1)} disabled={animating} aria-label="Previous service"><ArrowIcon /></button>
+        <button type="button" onClick={() => step(1)} disabled={animating} aria-label="Next service"><ArrowIcon next /></button>
       </div>
       <span className={styles.srOnly} aria-live="polite">{services[activeIndex]?.title}</span>
     </section>
