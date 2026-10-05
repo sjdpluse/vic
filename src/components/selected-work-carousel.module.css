@@ -1,13 +1,13 @@
 .section {
   position: relative;
   overflow: hidden;
-  padding: clamp(86px, 10vw, 150px) 0 68px;
+  padding: clamp(86px, 10vw, 150px) 24px 68px;
   background: var(--paper);
   color: var(--ink);
 }
 
 .heading {
-  width: min(1180px, calc(100% - 48px));
+  width: min(1180px, 100%);
   margin: 0 auto 58px;
   text-align: center;
 }
@@ -29,15 +29,29 @@
   line-height: 1.7;
 }
 
+.carouselInner {
+  --inner-width: min(calc(100vw - 48px), 1505px);
+  --card-width: min(352px, 100%);
+  --card-gap: 24px;
+  --controls-top-space: 50px;
+  width: min(100%, var(--inner-width));
+  margin-inline: auto;
+  position: relative;
+}
+
 .track {
+  --bleed: calc((100vw - var(--inner-width)) / 2);
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 510px;
-  gap: 42px;
+  grid-auto-columns: var(--card-width);
+  gap: var(--card-gap);
+  margin-inline: calc(-1 * var(--bleed));
+  padding-inline: var(--bleed);
+  scroll-padding-inline: var(--bleed);
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 42px;
   scroll-snap-type: x mandatory;
+  scroll-behavior: auto;
   scrollbar-width: none;
   cursor: grab;
   touch-action: pan-y;
@@ -46,21 +60,28 @@
 }
 
 .track::-webkit-scrollbar { display: none; }
-.dragging { cursor: grabbing; scroll-snap-type: none; }
+.animating,
+.dragging { scroll-snap-type: none; }
+.dragging { cursor: grabbing; }
+.dragging img { pointer-events: none; }
 
 .card {
   position: relative;
-  width: 510px;
-  height: 706px;
+  display: flex;
+  flex-direction: column;
+  width: var(--card-width);
+  min-height: 467px;
+  padding: 24px;
   overflow: hidden;
-  border-radius: 42px;
+  border-radius: 24px;
   background: #171717;
   color: #fff;
+  text-align: left;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  contain: paint;
+  overflow-anchor: none;
   isolation: isolate;
-  will-change: transform;
-  transform-origin: 50% 50%;
 }
 
 .card::after {
@@ -68,13 +89,14 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, rgb(0 0 0 / 0%) 35%, rgb(0 0 0 / 10%) 56%, rgb(0 0 0 / 82%) 100%);
+  background: linear-gradient(180deg, rgb(0 0 0 / 0%) 17.04%, rgb(0 0 0 / 80%) 100%);
   pointer-events: none;
 }
 
 .media {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -95,26 +117,25 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 32px 32px 0;
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
+  gap: 5px;
+  padding: 8px 12px;
   border-radius: 999px;
-  background: rgb(255 255 255 / 14%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  font-size: 13px;
-  font-weight: 600;
+  background: rgb(255 255 255 / 15%);
+  backdrop-filter: blur(14.649px);
+  -webkit-backdrop-filter: blur(14.649px);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .pill svg {
-  width: 15px;
-  height: 15px;
+  width: 11px;
+  height: 11px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
@@ -123,73 +144,47 @@
 }
 
 .card h3 {
-  position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 128px;
-  margin: 0;
+  margin: auto 0 0;
+  padding-top: 24px;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 48px;
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: -.045em;
-  transition: transform 360ms cubic-bezier(.16,1,.3,1);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.02em;
 }
 
 .description {
-  position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 72px;
-  max-width: 410px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 240ms ease, transform 360ms cubic-bezier(.16,1,.3,1);
+  margin-top: 12px;
+  max-width: 391px;
 }
 
 .description p {
   margin: 0;
   color: rgb(255 255 255 / 82%);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.card:hover .description,
-.card:focus-within .description {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.card:hover h3,
-.card:focus-within h3 {
-  transform: translateY(-44px);
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .cta {
-  position: absolute;
-  left: 32px;
-  bottom: 30px;
   display: inline-flex;
-  min-width: 130px;
-  min-height: 48px;
   align-items: center;
-  justify-content: center;
-  padding: 0 24px;
-  border: 2px solid rgb(255 255 255 / 28%);
+  align-self: flex-start;
+  margin-top: 30px;
+  padding: 10px 25px;
+  border: 2.762px solid #323232;
   border-radius: 999px;
-  background: rgb(0 0 0 / 14%);
-  backdrop-filter: blur(8px);
+  background: transparent;
   color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
 }
 
 .controls {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  width: fit-content;
-  margin: 34px auto 0;
+  gap: 10px;
+  margin-top: var(--controls-top-space);
 }
 
 .control {
@@ -201,79 +196,58 @@
   padding: 0;
   border: 2px solid #e8dfd5;
   border-radius: 999px;
-  background: var(--paper);
+  background: transparent;
   color: #323232;
   cursor: pointer;
-  transition: background 180ms ease, opacity 180ms ease;
+  transition: background .2s ease, opacity .2s ease;
 }
 
-.control svg { width: 100%; height: 100%; }
+.control svg { display: block; width: 100%; height: 100%; }
+.nextArrow { transform: rotate(180deg); }
 
 .control:hover:not(:disabled),
 .control:focus-visible:not(:disabled) { background: #e8dfd5; }
-
 .control:disabled { opacity: .3; cursor: not-allowed; }
 
-@media (max-width: 1200px) {
-  .track {
-    grid-auto-columns: 430px;
-    gap: 28px;
-    padding-inline: 28px;
+@media (min-width: 400px) {
+  .carouselInner { --controls-top-space: 64px; }
+}
+
+@media (min-width: 1025px) {
+  .carouselInner {
+    --card-gap: 40px;
+    --card-width: 475px;
+    --controls-top-space: 80px;
   }
 
   .card {
-    width: 430px;
-    height: 596px;
-    border-radius: 36px;
+    min-height: 660px;
+    padding: 30px;
+    border-radius: 42.86px;
   }
 
-  .card h3 { font-size: 42px; }
+  .pills { gap: 10px; }
+  .pill { gap: 6px; padding: 12px 16px; font-size: 13.715px; }
+  .pill svg { width: 12px; height: 12px; }
+
+  .card h3 {
+    padding-top: 24px;
+    font-size: 42px;
+    font-weight: 400;
+  }
+
+  .description { margin-top: 20px; }
+  .description p { font-size: 20px; line-height: 1.4; }
+  .cta { margin-top: 30px; padding: 16px 32px; font-size: 18px; }
 }
 
 @media (max-width: 760px) {
   .section { padding-top: 72px; padding-bottom: 48px; }
-
-  .heading {
-    width: calc(100% - 40px);
-    margin-bottom: 42px;
-  }
-
+  .heading { margin-bottom: 42px; }
   .heading h2 { font-size: clamp(44px, 12vw, 58px); }
   .heading p { margin-top: 18px; font-size: 13px; }
-
-  .track {
-    grid-auto-columns: min(82vw, 350px);
-    gap: 18px;
-    padding-inline: 18px;
-  }
-
-  .card {
-    width: min(82vw, 350px);
-    height: min(113.5vw, 484px);
-    min-height: 0;
-    border-radius: 30px;
-  }
-
-  .pills { padding: 22px 22px 0; gap: 8px; }
-  .pill { min-height: 40px; padding: 0 15px; font-size: 12px; }
-
-  .card h3 { left: 22px; right: 22px; bottom: 108px; font-size: 34px; }
-  .description { left: 22px; right: 22px; bottom: 66px; }
-  .description p { font-size: 12px; }
-  .cta { left: 22px; bottom: 22px; min-width: 118px; min-height: 44px; padding-inline: 20px; font-size: 13px; }
-
-  .controls { margin-top: 28px; }
-  .control { width: 56px; height: 56px; }
-}
-
-@media (hover: none) {
-  .description { opacity: 1; transform: none; }
-  .card h3 { transform: translateY(-38px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .track { scroll-behavior: auto; }
-  .description,
-  .card h3,
   .control { transition: none; }
 }
