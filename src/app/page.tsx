@@ -5,6 +5,7 @@ import { FreeQuoteForm } from "@/components/free-quote-form";
 import { ServiceCarousel } from "@/components/service-carousel";
 import { getPublishedProjects, projectCover } from "@/lib/projects";
 import { services } from "@/lib/services";
+import aboutStyles from "./home-about.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -40,16 +41,24 @@ export default async function Home() {
       <HomepageNavBridge />
       <ServiceCarousel services={services} />
 
-      <section className="intro section-shell" id="about" aria-labelledby="about-title">
-        <div className="intro__grid">
-          <h2 id="about-title">About Us</h2>
-          <div className="intro__copy">
-            <p className="intro__lead">VIC PREMIER CONSTRUCTION TEAM delivers residential and commercial construction and renovation services across Melbourne.</p>
-            <p>The work spans renovation, painting, roof restoration, gutters, tiling, rendering and general carpentry. The focus is simple: a clear scope, considered workmanship and finishes that belong to the property rather than fight it.</p>
-            <Link className="editorial-link" href="/about">More about VIC Premier <span aria-hidden="true">↗</span></Link>
+      <section className={aboutStyles.section} id="about" aria-labelledby="about-title">
+        <div className={aboutStyles.header}>
+          <div className={aboutStyles.titleWrap}>
+            <h2 id="about-title" className={aboutStyles.title}>about us</h2>
+            <div className={aboutStyles.micro} aria-hidden="true"><span>construction</span><span>renovation</span></div>
           </div>
+          <span className={aboutStyles.star} aria-hidden="true">✦</span>
         </div>
-        <div className="intro__statement" aria-hidden="true"><span>CONSTRUCT</span><i /><span>RENEW</span><i /><span>FINISH</span></div>
+
+        <div className={aboutStyles.statementRow}>
+          <p className={aboutStyles.statement}>
+            <span className={aboutStyles.accent}>We renew homes and commercial spaces</span> with a clear idea: every detail should earn its place. <span className={aboutStyles.pill} aria-hidden="true" /> From structure to finish, we bring renovation, painting, roof restoration, gutters, tiling, rendering and carpentry together into <span className={aboutStyles.accent}>spaces that feel resolved, cohesive and distinctly yours.</span>
+          </p>
+        </div>
+
+        <div className={aboutStyles.footer}>
+          <Link className={aboutStyles.link} href="/about">Discover VIC Premier <span aria-hidden="true">↗</span></Link>
+        </div>
       </section>
 
       <section className="services section-shell" id="services" aria-labelledby="services-title">
