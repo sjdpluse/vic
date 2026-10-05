@@ -1,0 +1,55 @@
+:root {
+  --display-font: var(--font-playfair-display), Georgia, "Times New Roman", serif;
+  --display-size: 90px;
+}
+
+/* Keep body copy and controls readable; use Playfair consistently for the site's display typography. */
+h1,
+h2,
+h3,
+.hero h1,
+.intro h2,
+.services h2,
+.projects h2,
+.process h2,
+.quote h2,
+.project-frame span {
+  font-family: var(--display-font) !important;
+}
+
+.hero h1,
+.process__header h2,
+.quote h2 {
+  font-size: clamp(58px, 6.25vw, var(--display-size)) !important;
+}
+
+.process__header {
+  display: block !important;
+}
+
+.process__header h2 {
+  max-width: 1120px !important;
+  margin: 0 !important;
+  color: #686868;
+  font-weight: 400 !important;
+  line-height: .88 !important;
+  letter-spacing: -.055em !important;
+  text-transform: lowercase;
+  text-wrap: balance;
+}
+
+.process__steps {
+  margin-top: clamp(68px, 8vw, 112px) !important;
+}
+
+@media (max-width: 767px) {
+  .hero h1,
+  .process__header h2,
+  .quote h2 {
+    font-size: clamp(48px, 14vw, 68px) !important;
+  }
+
+  .process__header h2 {
+    line-height: .92 !important;
+  }
+}
