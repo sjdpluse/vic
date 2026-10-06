@@ -22,9 +22,6 @@ create table if not exists public.selected_work_items (
   updated_at timestamptz not null default now()
 );
 
-drop trigger if exists selected_work_items_set_updated_at on public.selected_work_items;
-create trigger selected_work_items_set_updated_at before update on public.selected_work_items
-for each row execute function public.set_updated_at();
 
 grant select on public.selected_work_items to anon, authenticated;
 grant insert, update, delete on public.selected_work_items to authenticated;
