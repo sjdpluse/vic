@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./selected-work-carousel.module.css";
 
 export type SelectedWorkCard = {
@@ -568,18 +568,12 @@ export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
             const handleReady =
               (phase === "split" || phase === "manual") && comparisonDraggingIndex !== cardIndex;
 
-            const initialStyle = {
-              "--split": "0%",
-              "--after-label-x": "0%",
-              "--before-label-x": "50%",
-            } as CSSProperties;
 
             return (
               <article
                 key={card.id}
                 ref={(node) => { cardRefs.current[cardIndex] = node; }}
                 className={`${styles.card} ${phaseClass}`}
-                style={initialStyle}
                 role="group"
                 aria-roledescription="slide"
                 aria-label={`${cardIndex + 1} of ${cards.length}: ${card.title}`}
