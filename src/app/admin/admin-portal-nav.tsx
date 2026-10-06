@@ -2,18 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import styles from "./admin-portal-nav.module.css";
 
-type AdminPortalNavProps = {
-  canViewEnquiries?: boolean;
-};
-
-export function AdminPortalNav({ canViewEnquiries = true }: AdminPortalNavProps) {
-  const pathname = usePathname();
-  const onProjects = pathname === "/admin";
-  const onEnquiries = pathname.startsWith("/admin/enquiries");
-
+export function AdminPortalNav() {
   return (
     <div className={styles.wrap}>
       <Link href="/" className={styles.brand} aria-label="VIC Premier home">
@@ -27,16 +18,10 @@ export function AdminPortalNav({ canViewEnquiries = true }: AdminPortalNavProps)
       </Link>
 
       <nav className={styles.switcher} aria-label="Admin sections">
-        <Link href="/admin" className={onProjects ? styles.active : undefined} aria-current={onProjects ? "page" : undefined}>
-          <span className={styles.navIcon} aria-hidden="true">▦</span>
-          <span>Projects</span>
+        <Link href="/admin/enquiries" className={styles.active} aria-current="page">
+          <span className={styles.navIcon} aria-hidden="true">✉</span>
+          <span>Enquiries</span>
         </Link>
-        {canViewEnquiries ? (
-          <Link href="/admin/enquiries" className={onEnquiries ? styles.active : undefined} aria-current={onEnquiries ? "page" : undefined}>
-            <span className={styles.navIcon} aria-hidden="true">✉</span>
-            <span>Enquiries</span>
-          </Link>
-        ) : null}
       </nav>
 
       <Link href="/" className={styles.viewSite} target="_blank" rel="noreferrer">

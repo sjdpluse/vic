@@ -339,3 +339,91 @@
     width: 100%;
   }
 }
+
+
+.login {
+  display: grid;
+  width: min(100%, 460px);
+  gap: 16px;
+  padding: 30px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 26px;
+  background: rgb(255 255 255 / 5%);
+  box-shadow: 0 22px 70px rgb(0 0 0 / 18%);
+}
+
+.login h1 {
+  margin: 0 0 6px;
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(2.7rem, 7vw, 4.8rem);
+  font-weight: 500;
+  line-height: .9;
+  letter-spacing: -.045em;
+}
+
+.login label {
+  display: grid;
+  gap: 7px;
+  color: rgb(245 243 237 / 68%);
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.login input {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid rgb(245 243 237 / 14%);
+  border-radius: 13px;
+  outline: none;
+  background: rgb(255 255 255 / 5%);
+  color: #fff;
+  font: inherit;
+}
+
+.login input:focus {
+  border-color: #7dafca;
+  box-shadow: 0 0 0 4px rgb(125 175 202 / 12%);
+}
+
+.login button,
+.accessCard button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: #f5f3ed;
+  color: #171715;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.login button:disabled,
+.accessCard button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.authMessage {
+  margin: 0;
+  color: #f4b9c4;
+  font-size: .78rem;
+}
+
+.accessCard {
+  display: grid;
+  width: min(100%, 520px);
+  gap: 16px;
+  padding: 28px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 5%);
+}
+
+.accessCard p {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}

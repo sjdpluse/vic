@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { AdminConsole } from "./admin-console";
-import { AdminPortalNav } from "./admin-portal-nav";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Admin | VIC Premier Construction Team",
@@ -8,10 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminPage() {
-  return (
-    <>
-      <AdminPortalNav />
-      <AdminConsole />
-    </>
-  );
+  redirect("/admin/enquiries");
 }

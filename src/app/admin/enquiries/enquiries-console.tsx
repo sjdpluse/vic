@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { createBrowserSupabaseClient } from "@/lib/supabase";
 import styles from "./enquiries.module.css";
@@ -36,6 +36,9 @@ export function EnquiriesConsole() {
   const [filter, setFilter] = useState<Status | "all">("all");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,15 +52,46 @@ export function EnquiriesConsole() {
   }, [supabase]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      if (!data.session) return;
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.session.user.id).single();
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!session) {
+      setRole(null);
+      setItems([]);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      if (cancelled) return;
+      if (error) {
+        setRole(null);
+        setMessage(error.message);
+        return;
+      }
+
       const nextRole = (profile as Profile | null)?.role ?? null;
       setRole(nextRole);
       if (nextRole === "admin") void load();
-    });
-  }, [load, supabase]);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [load, session, supabase]);
 
   const counts = useMemo(() => Object.fromEntries(statuses.map((status) => [status, items.filter((item) => item.status === status).length])) as Record<Status, number>, [items]);
   const visible = useMemo(() => {
@@ -71,6 +105,27 @@ export function EnquiriesConsole() {
     });
   }, [filter, items, query]);
 
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAuthBusy(true);
+    setMessage("");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setAuthBusy(false);
+    if (error) setMessage(error.message);
+  }
+
+  async function handleSignOut() {
+    setAuthBusy(true);
+    const { error } = await supabase.auth.signOut();
+    setAuthBusy(false);
+    if (error) setMessage(error.message);
+    else {
+      setMessage("");
+      setEmail("");
+      setPassword("");
+    }
+  }
+
   async function updateStatus(id: string, status: Status) {
     const { error } = await supabase.from("enquiries").update({ status }).eq("id", id);
     if (error) setMessage(error.message);
@@ -83,9 +138,39 @@ export function EnquiriesConsole() {
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
-  if (!session) return <main className={styles.shell}><p>Sign in through <a href="/admin">the Projects admin</a> first.</p></main>;
+  if (!session) {
+    return (
+      <main className={styles.shell}>
+        <form className={styles.login} onSubmit={handleLogin}>
+          <p className={styles.eyebrow}>VIC PREMIER / ADMIN PORTAL</p>
+          <h1>Sign in</h1>
+          <label>
+            <span>Email</span>
+            <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </label>
+          <button type="submit" disabled={authBusy}>{authBusy ? "Signing in…" : "Sign in"}</button>
+          {message ? <p className={styles.authMessage}>{message}</p> : null}
+        </form>
+      </main>
+    );
+  }
+
   if (role === null) return <main className={styles.shell}><p>Loading account…</p></main>;
-  if (role !== "admin") return <main className={styles.shell}><p>Admin access is required for enquiries.</p></main>;
+
+  if (role !== "admin") {
+    return (
+      <main className={styles.shell}>
+        <div className={styles.accessCard}>
+          <p>Admin access is required for enquiries.</p>
+          <button type="button" onClick={() => void handleSignOut()} disabled={authBusy}>Sign out</button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.page}>
@@ -96,6 +181,7 @@ export function EnquiriesConsole() {
         </div>
         <div className={styles.headerActions}>
           <button onClick={() => void load()} disabled={loading}>{loading ? "Refreshing…" : "Refresh enquiries"}</button>
+          <button onClick={() => void handleSignOut()} disabled={authBusy}>{authBusy ? "Signing out…" : "Sign out"}</button>
         </div>
       </header>
 

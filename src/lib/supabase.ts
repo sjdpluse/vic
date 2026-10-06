@@ -22,12 +22,3 @@ export function createPublicSupabaseClient() {
 export function createBrowserSupabaseClient() {
   return createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 }
-
-export function projectMediaPublicUrl(storagePath: string) {
-  const safePath = storagePath
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-
-  return `${SUPABASE_URL}/storage/v1/object/public/project-media/${safePath}`;
-}
