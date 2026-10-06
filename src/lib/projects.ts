@@ -29,7 +29,7 @@ function normalizeProject<T extends PublishedProject>(project: T): T {
 }
 
 const publishedProjectSelect =
-  "id,slug,title,summary,description,featured,sort_order,published_at,project_media(id,storage_path,media_type,alt_text,caption,sort_order)";
+  "id,slug,title,summary,description,featured,sort_order,published_at,project_media(id,storage_path,media_type,alt_text,caption,display_role,sort_order)";
 
 export async function getPublishedProjects(limit = 6): Promise<PublishedProject[]> {
   const supabase = createPublicSupabaseClient();
