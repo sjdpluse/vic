@@ -112,8 +112,8 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  clip-path: inset(0 100% 0 0);
-  animation: selected-work-after-reveal 7.2s cubic-bezier(.76, 0, .24, 1) infinite;
+  clip-path: inset(0 0 0 100%);
+  animation: selected-work-after-reveal 8s cubic-bezier(.76, 0, .24, 1) infinite;
   will-change: clip-path;
 }
 
@@ -129,21 +129,75 @@
   background: rgb(255 255 255 / 96%);
   box-shadow: 0 0 20px rgb(255 255 255 / 45%);
   opacity: 0;
-  transform: translateX(0);
-  animation: selected-work-wipe-line 7.2s cubic-bezier(.76, 0, .24, 1) infinite;
+  transform: translateX(calc(var(--card-width) - 2px));
+  animation: selected-work-wipe-line 8s cubic-bezier(.76, 0, .24, 1) infinite;
   will-change: transform, opacity;
 }
 
 @keyframes selected-work-after-reveal {
-  0%, 22% { clip-path: inset(0 100% 0 0); }
-  50%, 100% { clip-path: inset(0 0 0 0); }
+  0%, 20% { clip-path: inset(0 0 0 100%); }
+  50% { clip-path: inset(0 0 0 0); }
+  72%, 100% { clip-path: inset(0 0 0 50%); }
 }
 
 @keyframes selected-work-wipe-line {
-  0%, 21% { opacity: 0; transform: translateX(0); }
-  22% { opacity: 1; transform: translateX(0); }
-  50% { opacity: 1; transform: translateX(calc(var(--card-width) - 2px)); }
-  51%, 100% { opacity: 0; transform: translateX(calc(var(--card-width) - 2px)); }
+  0%, 19% {
+    opacity: 0;
+    transform: translateX(calc(var(--card-width) - 2px));
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(calc(var(--card-width) - 2px));
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  72%, 100% {
+    opacity: 1;
+    transform: translateX(calc(var(--card-width) / 2 - 1px));
+  }
+}
+
+.comparisonLabels {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(230px, 72%);
+  margin: auto auto 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 38%);
+}
+
+.comparisonLabels span {
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.beforeLabel {
+  justify-self: center;
+  animation: selected-work-before-label 8s ease infinite;
+}
+
+.afterLabel {
+  justify-self: center;
+  animation: selected-work-after-label 8s ease infinite;
+}
+
+@keyframes selected-work-before-label {
+  0%, 19% { opacity: 1; }
+  20%, 55% { opacity: 0; }
+  72%, 100% { opacity: 1; }
+}
+
+@keyframes selected-work-after-label {
+  0%, 49% { opacity: 0; }
+  50%, 55% { opacity: 1; }
+  72%, 100% { opacity: 1; }
 }
 
 .cta {
@@ -239,8 +293,18 @@
 
   .afterReveal {
     animation: none;
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(0 0 0 50%);
   }
 
-  .wipeLine { display: none; }
+  .wipeLine {
+    opacity: 1;
+    animation: none;
+    transform: translateX(calc(var(--card-width) / 2 - 1px));
+  }
+
+  .beforeLabel,
+  .afterLabel {
+    opacity: 1;
+    animation: none;
+  }
 }
