@@ -72,7 +72,7 @@ export function projectMediaUrl(media: ProjectMedia) {
 }
 
 export function projectCover(project: PublishedProject) {
-  const media = project.project_media.find((item) => item.media_type === "image");
+  const media = project.project_media.find((item) => item.display_role === "gallery" && item.media_type === "image");
   return media
     ? {
         src: projectMediaUrl(media),
