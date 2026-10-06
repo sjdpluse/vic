@@ -136,17 +136,14 @@
 
 @keyframes selected-work-after-reveal {
   0%, 22% { clip-path: inset(0 100% 0 0); }
-  48%, 78% { clip-path: inset(0 0 0 0); }
-  100% { clip-path: inset(0 100% 0 0); }
+  50%, 100% { clip-path: inset(0 0 0 0); }
 }
 
 @keyframes selected-work-wipe-line {
   0%, 21% { opacity: 0; transform: translateX(0); }
   22% { opacity: 1; transform: translateX(0); }
-  48% { opacity: 1; transform: translateX(calc(var(--card-width) - 2px)); }
-  49%, 77% { opacity: 0; transform: translateX(calc(var(--card-width) - 2px)); }
-  78% { opacity: 1; transform: translateX(calc(var(--card-width) - 2px)); }
-  100% { opacity: 1; transform: translateX(0); }
+  50% { opacity: 1; transform: translateX(calc(var(--card-width) - 2px)); }
+  51%, 100% { opacity: 0; transform: translateX(calc(var(--card-width) - 2px)); }
 }
 
 .cta {
