@@ -169,7 +169,7 @@
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
-  margin-top: 30px;
+  margin-top: auto;
   padding: 10px 25px;
   border: 2.762px solid #323232;
   border-radius: 999px;
