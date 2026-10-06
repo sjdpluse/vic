@@ -1,9 +1,8 @@
 # VIC Premier launch checklist
 
 ## Content
-- Replace all demo/test project records with verified client-supplied project content before publishing.
-- Confirm every published project title, summary, description, alt text and media is approved for public use.
-- Keep unverified licensing, registration, warranty, insurance, award, review, rating and years-of-experience claims off the site.
+- Confirm public service, About, Contact and quote content uses verified client-supplied information.
+- Keep unverified licensing, registration, warranty, insurance, award, review, rating, years-of-experience and project claims off the site.
 
 ## Domain and Vercel
 - Purchase `vicpremierconstructionteam.au` in the business owner's details.
@@ -33,13 +32,13 @@
 
 ## SEO launch
 - Confirm `robots.txt` allows public pages and blocks `/admin` only after `NEXT_PUBLIC_SITE_URL` is set.
-- Confirm `/sitemap.xml` includes the homepage, services, contact, privacy and only real published projects.
+- Confirm `/sitemap.xml` includes the homepage, services, contact and privacy routes.
 - Confirm page metadata and canonical URLs resolve to the purchased domain.
 - Add the site to Google Search Console and submit the sitemap only after the custom domain is live.
 
 ## Final QA
-- Desktop and mobile: hero sequence, navigation, services, projects, contact, privacy and quote form.
-- Keyboard: focus visibility, mobile menu, project lightbox, previous/next controls and Escape close.
+- Desktop and mobile: hero sequence, navigation, services, Selected Work, About, contact, privacy and quote form.
+- Keyboard: focus visibility, mobile menu, service carousel controls, Selected Work comparison controls and admin controls.
 - Reduced motion: verify the hero fallback remains usable.
 - Test phone and email links.
 - Confirm no secrets are exposed in client bundles or committed files.

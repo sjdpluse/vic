@@ -539,7 +539,7 @@ export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
   if (!cards.length) return null;
 
   return (
-    <section className={styles.section} id="projects" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
+    <section className={styles.section} id="selected-work" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
       <div className={styles.heading}>
         <h2 id="selected-work-title">Selected Work</h2>
       </div>

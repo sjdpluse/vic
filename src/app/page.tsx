@@ -5,7 +5,7 @@ import { FreeQuoteForm } from "@/components/free-quote-form";
 import { ServiceCarousel } from "@/components/service-carousel";
 import { SelectedWorkCarousel } from "@/components/selected-work-carousel";
 import { services } from "@/lib/services";
-import { getPublishedProjects, projectMediaUrl } from "@/lib/projects";
+import { getSelectedWorkCards } from "@/lib/selected-work";
 import aboutStyles from "./home-about.module.css";
 
 export const dynamic = "force-dynamic";
@@ -17,20 +17,7 @@ const process = [
 ] as const;
 
 export default async function Home() {
-  const publishedProjects = await getPublishedProjects(12);
-  const selectedWorkCards = publishedProjects.flatMap((project) => {
-    const before = project.project_media.find((item) => item.display_role === "before" && item.media_type === "image");
-    const after = project.project_media.find((item) => item.display_role === "after" && item.media_type === "image");
-    if (!before || !after) return [];
-    return [{
-      id: project.id,
-      title: project.title,
-      beforeSrc: projectMediaUrl(before),
-      afterSrc: projectMediaUrl(after),
-      beforeAlt: before.alt_text || `${project.title} before renovation`,
-      afterAlt: after.alt_text || `${project.title} after renovation`,
-    }];
-  });
+  const selectedWorkCards = await getSelectedWorkCards();
 
   const localBusiness = {
     "@context": "https://schema.org",

@@ -148,16 +148,28 @@
 .cta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  align-self: flex-start;
   width: fit-content;
+  padding: 10px 25px;
+  border: 1.5px solid rgb(255 255 255 / 58%);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 20%);
   color: #fff;
+  backdrop-filter: blur(12px) saturate(135%);
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
   font-size: 12px;
-  line-height: 1;
+  font-weight: 500;
+  line-height: normal;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
-.cta span:last-child { transition: transform 180ms ease; }
-.cta:hover span:last-child { transform: translateX(3px); }
-.cta:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.cta:hover,
+.cta:focus-visible {
+  background: rgb(255 255 255 / 16%);
+  border-color: rgb(255 255 255 / 85%);
+  transform: translateY(-1px);
+}
 
 .controls {
   position: relative;
@@ -221,7 +233,7 @@
   .content { min-height: 44%; padding: 38px 32px 32px; }
   .content h3 { font-size: 30px; }
   .content p { margin: 13px 0 20px; font-size: 15px; line-height: 1.48; -webkit-line-clamp: 4; line-clamp: 4; }
-  .cta { gap: 8px; font-size: 14px; }
+  .cta { padding: 14px 28px; font-size: 16px; }
   .controls { gap: 12px; margin-top: 0; }
 }
 
@@ -237,5 +249,5 @@
 @media (prefers-reduced-motion: reduce) {
   .cardPosition,
   .controls button,
-  .cta span:last-child { transition: none; }
+  .cta { transition: none; }
 }

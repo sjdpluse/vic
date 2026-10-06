@@ -6,7 +6,7 @@ This file is mandatory reading for every AI agent and human contributor.
 
 **Business:** VIC PREMIER CONSTRUCTION TEAM  
 **Market:** Melbourne, Victoria, Australia  
-**Product:** Premium cinematic construction / renovation website with scroll-driven frame-sequence storytelling, CMS and enquiry system.
+**Product:** Premium cinematic construction / renovation website with scroll-driven frame-sequence storytelling, Selected Work before/after media and an admin enquiry system.
 
 ## Non-negotiable product direction
 
@@ -98,23 +98,20 @@ The supplied brand artwork contains the words “BUILDER REGISTRATION”. Treat 
 - Avoid scroll-jacking patterns that trap the user.
 - HTML headings, labels and CTAs remain outside the Canvas and are synchronized to sequence beats.
 
-## CMS and media
-
-Dynamic project images do not belong in GitHub.
+## Admin and media
 
 Preferred backend:
 - Supabase Auth
 - Supabase Postgres
 - Supabase Storage
 
-Admin requirements:
-- secure `/admin`
+Current admin scope:
+- secure `/admin` entry point
 - explicit admin authorization
-- project CRUD
-- draft/publish/archive
-- project media upload/order/caption/alt text
-- selected site content/settings
-- no unconstrained page builder
+- Selected Work Before/After card management only
+- enquiry inbox and status workflow
+- private enquiry attachment access through short-lived signed URLs
+- no project CRUD, project detail pages, title/slug/summary/description workflow, publish/archive states or project galleries unless the product direction is explicitly changed again
 
 ## Consultation/enquiry workflow
 
@@ -152,7 +149,7 @@ Email notifications should send through a transactional provider; secrets remain
 
 ## Engineering rules
 
-- Never commit secrets or customer/project media.
+- Never commit secrets, Selected Work media or customer enquiry media.
 - Never commit master transformation videos or large production frame sets.
 - Keep privileged Supabase keys server-only.
 - Validate public and admin writes on the server.

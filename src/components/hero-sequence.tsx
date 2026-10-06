@@ -428,7 +428,7 @@ export function HeroSequence() {
           <nav aria-label="Primary navigation">
             <a href="#about">About</a>
             <a href="#services">Services</a>
-            <a href="#projects">Projects</a>
+            <a href="#selected-work">Selected Work</a>
             <a href="#process">Process</a>
           </nav>
           <a className="icon-cta" href="#consultation">

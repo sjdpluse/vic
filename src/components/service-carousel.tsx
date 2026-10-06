@@ -9,7 +9,6 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
-  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import type { ServiceDefinition } from "@/lib/services";
@@ -118,6 +117,12 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (animating || (event.pointerType === "mouse" && event.button !== 0)) return;
+
+    const target = event.target;
+    if (target instanceof Element && target.closest("a, button, input, select, textarea, [role='button']")) {
+      return;
+    }
+
     const node = stageRef.current;
     if (!node) return;
     setMotionDirection(0);
@@ -145,12 +150,6 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
       window.requestAnimationFrame(() => setInteracting(false));
       return snapped;
     });
-  }
-
-  function guardDraggedLink(event: ReactMouseEvent<HTMLAnchorElement>) {
-    if (!dragRef.current.moved) return;
-    event.preventDefault();
-    dragRef.current.moved = false;
   }
 
   if (!services.length) return null;
@@ -215,10 +214,8 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
                       href={`/services/${service.slug}`}
                       className={styles.cta}
                       tabIndex={isActive ? 0 : -1}
-                      onClick={guardDraggedLink}
                     >
-                      <span>Explore service</span>
-                      <span aria-hidden="true">→</span>
+                      Explore Service
                     </Link>
                   </div>
                 </div>

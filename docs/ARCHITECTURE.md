@@ -89,7 +89,7 @@ With `prefers-reduced-motion`, disable continuous scrubbing and display a stable
 
 If Canvas or sequence loading fails, the same stable fallback must remain visible and the rest of the website must continue functioning.
 
-## Public content / CMS
+## Public data / admin backend
 
 Preferred backend:
 
@@ -97,27 +97,22 @@ Preferred backend:
 - Supabase Postgres
 - Supabase Storage
 
-Primary content entities:
-- `projects`
-- `project_media`
+Primary entities:
 - `site_settings`
 - `profiles` / admin authorization
+- `selected_work_items`
+- `enquiries`
+- `enquiry_media`
 
-Dynamic project media lives in object storage, never Git.
-
-Public queries expose only published content.
+The product no longer includes a public project portfolio, project detail routes or a project CMS. The landing-page Selected Work carousel is a separate feature backed only by Before/After media pairs.
 
 ## Admin
 
 Protected routes:
-- `/admin/login`
-- `/admin`
-- `/admin/projects`
-- `/admin/projects/new`
-- `/admin/projects/[id]`
-- `/admin/settings`
+- `/admin` for Selected Work Before/After management
+- `/admin/enquiries` for enquiry management
 
-Authorization must be checked server-side and backed by RLS/database policy where possible.
+Selected Work administration intentionally has no project title, slug, summary, description, publish/archive or gallery model. Authorization is backed by Supabase Auth, profile roles and RLS/database policy.
 
 ## Consultation / quote system
 
@@ -178,8 +173,6 @@ Requirements:
 - route-specific metadata
 - canonical discipline
 - JSON-LD using verified facts only
-- dynamic sitemap for published projects when project routes exist
-- server-rendered public project content
 
 ## Progressive enhancement
 
