@@ -6,6 +6,7 @@ export type ProjectMedia = {
   media_type: "image" | "video";
   alt_text: string | null;
   caption: string | null;
+  display_role: "gallery" | "before" | "after";
   sort_order: number;
 };
 
