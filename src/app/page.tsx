@@ -5,6 +5,7 @@ import { FreeQuoteForm } from "@/components/free-quote-form";
 import { ServiceCarousel } from "@/components/service-carousel";
 import { SelectedWorkCarousel } from "@/components/selected-work-carousel";
 import { services } from "@/lib/services";
+import { getPublishedProjects, projectMediaUrl } from "@/lib/projects";
 import aboutStyles from "./home-about.module.css";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,21 @@ const process = [
 ] as const;
 
 export default async function Home() {
+  const publishedProjects = await getPublishedProjects(12);
+  const selectedWorkCards = publishedProjects.flatMap((project) => {
+    const before = project.project_media.find((item) => item.display_role === "before" && item.media_type === "image");
+    const after = project.project_media.find((item) => item.display_role === "after" && item.media_type === "image");
+    if (!before || !after) return [];
+    return [{
+      id: project.id,
+      title: project.title,
+      beforeSrc: projectMediaUrl(before),
+      afterSrc: projectMediaUrl(after),
+      beforeAlt: before.alt_text || `${project.title} before renovation`,
+      afterAlt: after.alt_text || `${project.title} after renovation`,
+    }];
+  });
+
   const localBusiness = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -60,7 +76,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <SelectedWorkCarousel />
+      <SelectedWorkCarousel cards={selectedWorkCards} />
 
       <section className="process section-shell" id="process" aria-labelledby="process-title"><div className="process__header"><h2 id="process-title">A direct path from enquiry to the next step.</h2></div><div className="process__steps">{process.map(([index,title,copy])=><article key={index}><span>{index}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
       <section className="quote" id="consultation" aria-labelledby="quote-title"><div className="quote__grid"><div><div className="section-index section-index--light">05 / Start a project</div><h2 id="quote-title">Have a property that needs work?</h2><p style={{maxWidth:560,lineHeight:1.7,color:"rgb(255 255 255 / 76%)"}}>Free quotes are available. Send the project details and optional photos or plans. Attachments are stored privately for the VIC Premier team to review.</p></div><div className="quote__copy"><FreeQuoteForm /></div></div></section>
