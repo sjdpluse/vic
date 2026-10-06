@@ -217,8 +217,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
                       tabIndex={isActive ? 0 : -1}
                       onClick={guardDraggedLink}
                     >
-                      <span>Explore service</span>
-                      <span aria-hidden="true">→</span>
+                      View Service
                     </Link>
                   </div>
                 </div>
