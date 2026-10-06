@@ -439,9 +439,12 @@ export function HeroSequence() {
 
         <div className="hero__copy" ref={copyRef}>
           <h1 id="hero-title">
-            Build. Renovate.
-            <br />
-            <em>Restore.</em>
+            <span className="hero__title-line">
+              <span>Your vision.</span>
+            </span>{" "}
+            <span className="hero__title-line">
+              <em>Built beautifully.</em>
+            </span>
           </h1>
           <p className="hero__lede">
             Residential and commercial work shaped around the property, the scope and the finish.
