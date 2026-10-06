@@ -308,6 +308,10 @@ export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
                 </div>
                 <span className={styles.wipeLine} aria-hidden="true" />
               </div>
+              <div className={styles.comparisonLabels} aria-hidden="true">
+                <span className={styles.beforeLabel}>Before</span>
+                <span className={styles.afterLabel}>After</span>
+              </div>
               <Link className={styles.cta} href="/#services">View service</Link>
             </article>
           ))}
