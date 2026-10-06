@@ -6,9 +6,6 @@ import styles from "./selected-work-carousel.module.css";
 
 type WorkCard = {
   title: string;
-  label: string;
-  secondary: string;
-  description: string;
   href: string;
   image: string;
   alt: string;
@@ -25,45 +22,30 @@ const DRAG_THRESHOLD = 5;
 const cards: WorkCard[] = [
   {
     title: "Residential Renovation",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Placeholder media for a future client-supplied before-and-after renovation composition.",
     href: "/services/residential-construction-renovation",
     image: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1600&q=86",
     alt: "Residential renovation framing used as temporary visual placeholder",
   },
   {
     title: "Commercial Renewal",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Temporary visual direction for a future commercial project transformation card.",
     href: "/services/commercial-construction-renovation",
     image: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1600&q=86",
     alt: "Commercial construction scene used as temporary visual placeholder",
   },
   {
     title: "Roof Restoration",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Placeholder imagery until verified before-and-after project media is supplied for publication.",
     href: "/services/roof-restoration",
     image: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1600&q=86",
     alt: "Residential roofing used as temporary visual placeholder",
   },
   {
     title: "Tiling & Finish",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Temporary visual reference for a future client-supplied finish transformation.",
     href: "/services/tiling",
     image: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1600&q=86",
     alt: "Tiling work used as temporary visual placeholder",
   },
   {
     title: "Carpentry Detail",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Placeholder media for the future Selected Work library of verified client transformations.",
     href: "/services/general-carpentry",
     image: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1600&q=86",
     alt: "Carpentry work used as temporary visual placeholder",
@@ -346,15 +328,6 @@ export function SelectedWorkCarousel() {
               aria-label={`${cardIndex + 1} of ${cards.length}`}
             >
               <img className={styles.media} src={card.image} alt={card.alt} draggable={false} loading="eager" decoding="async" />
-              <div className={styles.pills}>
-                <div className={styles.pill}>
-                  <span>{card.label}</span>
-                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8H13.5M9 4L13.5 8L9 12" /></svg>
-                </div>
-                <div className={styles.pill}>{card.secondary}</div>
-              </div>
-              <h3>{card.title}</h3>
-              <div className={styles.description}><p>{card.description}</p></div>
               <Link className={styles.cta} href={card.href}>View service</Link>
             </article>
           ))}
