@@ -60,6 +60,9 @@
 .dragging img { pointer-events: none; }
 
 .card {
+  --split: 0%;
+  --after-label-x: 0%;
+  --before-label-x: 50%;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -82,8 +85,8 @@
   position: absolute;
   inset: auto 0 0;
   z-index: 2;
-  height: 26%;
-  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 50%));
+  height: 28%;
+  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 56%));
   pointer-events: none;
 }
 
@@ -112,8 +115,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  clip-path: inset(0 0 0 100%);
-  animation: selected-work-after-reveal 8s cubic-bezier(.76, 0, .24, 1) infinite;
+  clip-path: inset(0 calc(100% - var(--split)) 0 0);
   will-change: clip-path;
 }
 
@@ -121,93 +123,143 @@
 
 .wipeLine {
   position: absolute;
-  z-index: 2;
+  z-index: 4;
   top: 0;
   bottom: 0;
-  left: 0;
+  left: var(--split);
   width: 2px;
-  background: rgb(255 255 255 / 96%);
-  box-shadow: 0 0 20px rgb(255 255 255 / 45%);
+  background: rgb(255 255 255 / 97%);
+  box-shadow: 0 0 18px rgb(255 255 255 / 45%);
   opacity: 0;
-  transform: translateX(calc(var(--card-width) - 2px));
-  animation: selected-work-wipe-line 8s cubic-bezier(.76, 0, .24, 1) infinite;
-  will-change: transform, opacity;
+  transform: translateX(-1px);
+  pointer-events: none;
+  will-change: left, opacity;
 }
 
-@keyframes selected-work-after-reveal {
-  0%, 20% { clip-path: inset(0 0 0 100%); }
-  50% { clip-path: inset(0 0 0 0); }
-  72%, 100% { clip-path: inset(0 0 0 50%); }
+.phaseTransition .wipeLine,
+.phaseAfter .wipeLine,
+.phaseReturning .wipeLine,
+.phaseSplit .wipeLine,
+.phaseManual .wipeLine {
+  opacity: 1;
 }
 
-@keyframes selected-work-wipe-line {
-  0%, 19% {
-    opacity: 0;
-    transform: translateX(calc(var(--card-width) - 2px));
-  }
-  20% {
-    opacity: 1;
-    transform: translateX(calc(var(--card-width) - 2px));
-  }
-  50% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  72%, 100% {
-    opacity: 1;
-    transform: translateX(calc(var(--card-width) / 2 - 1px));
-  }
+.comparisonHandle {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: var(--split);
+  display: grid;
+  width: 54px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 30%), transparent 42%),
+    rgb(17 17 17 / 38%);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 38%),
+    0 8px 24px rgb(0 0 0 / 22%);
+  backdrop-filter: blur(14px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.76);
+  pointer-events: none;
+  touch-action: none;
+  cursor: ew-resize;
+  transition: opacity 240ms ease, transform 340ms cubic-bezier(.16, 1, .3, 1), border-color 180ms ease;
+  will-change: left, transform;
+}
+
+.comparisonHandle svg {
+  width: 34px;
+  height: 20px;
+}
+
+.phaseSplit .comparisonHandle,
+.phaseManual .comparisonHandle {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.handleReady {
+  animation: comparison-handle-stretch 1.7s cubic-bezier(.16, 1, .3, 1) 1;
+}
+
+.phaseManual .comparisonHandle {
+  animation: none;
+  transform: translate(-50%, -50%) scale(1.06);
+  border-color: rgb(255 255 255 / 96%);
+}
+
+@keyframes comparison-handle-stretch {
+  0% { transform: translate(-50%, -50%) scaleX(.72) scaleY(.9); }
+  32% { transform: translate(-50%, -50%) scaleX(1.22) scaleY(.92); }
+  58% { transform: translate(-50%, -50%) scaleX(.94) scaleY(1.06); }
+  78% { transform: translate(-50%, -50%) scaleX(1.05) scaleY(.98); }
+  100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 .comparisonLabels {
   position: relative;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: min(230px, 72%);
-  margin: auto auto 10px;
+  z-index: 5;
+  width: 100%;
+  height: 22px;
+  margin: auto 0 10px;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: .02em;
-  text-shadow: 0 2px 14px rgb(0 0 0 / 38%);
+  letter-spacing: .025em;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 46%);
+  pointer-events: none;
 }
 
 .comparisonLabels span {
+  position: absolute;
+  top: 0;
   opacity: 0;
-  transition: opacity 240ms ease;
-}
-
-.beforeLabel {
-  justify-self: center;
-  animation: selected-work-before-label 8s ease infinite;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  transition: opacity 220ms ease;
 }
 
 .afterLabel {
-  justify-self: center;
-  animation: selected-work-after-label 8s ease infinite;
+  left: var(--after-label-x);
 }
 
-@keyframes selected-work-before-label {
-  0%, 19% { opacity: 1; }
-  20%, 55% { opacity: 0; }
-  72%, 100% { opacity: 1; }
+.beforeLabel {
+  left: var(--before-label-x);
 }
 
-@keyframes selected-work-after-label {
-  0%, 49% { opacity: 0; }
-  50%, 55% { opacity: 1; }
-  72%, 100% { opacity: 1; }
+.phaseBefore .beforeLabel {
+  left: 50%;
+  opacity: 1;
+}
+
+.phaseAfter .afterLabel {
+  left: 50%;
+  opacity: 1;
+}
+
+.phaseSplit .afterLabel,
+.phaseSplit .beforeLabel,
+.phaseManual .afterLabel,
+.phaseManual .beforeLabel {
+  opacity: 1;
 }
 
 .cta {
   position: relative;
-  z-index: 3;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   align-self: center;
-  margin-top: auto;
+  margin-top: 0;
   padding: 10px 25px;
   border: 1.5px solid rgb(255 255 255 / 58%);
   border-radius: 999px;
@@ -275,6 +327,22 @@
     border-radius: 42.86px;
   }
 
+  .comparisonLabels {
+    height: 24px;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+
+  .comparisonHandle {
+    width: 62px;
+    height: 38px;
+  }
+
+  .comparisonHandle svg {
+    width: 38px;
+    height: 22px;
+  }
+
   .cta {
     padding: 16px 32px;
     font-size: 18px;
@@ -289,22 +357,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .control,
-  .cta { transition: none; }
-
-  .afterReveal {
-    animation: none;
-    clip-path: inset(0 0 0 50%);
+  .cta,
+  .comparisonHandle,
+  .comparisonLabels span {
+    transition: none;
   }
 
-  .wipeLine {
-    opacity: 1;
-    animation: none;
-    transform: translateX(calc(var(--card-width) / 2 - 1px));
-  }
-
-  .beforeLabel,
-  .afterLabel {
-    opacity: 1;
+  .handleReady {
     animation: none;
   }
 }
