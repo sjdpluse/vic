@@ -18,6 +18,7 @@ type ProjectMedia = {
   media_type: "image" | "video";
   alt_text: string | null;
   caption: string | null;
+  display_role: "gallery" | "before" | "after";
   sort_order: number;
   created_at: string;
 };
@@ -69,7 +70,7 @@ export function AdminConsole() {
   const loadProjects = useCallback(async () => {
     const { data, error } = await supabase
       .from("projects")
-      .select("id,slug,title,summary,description,status,featured,sort_order,published_at,created_at,project_media(id,project_id,storage_path,media_type,alt_text,caption,sort_order,created_at)")
+      .select("id,slug,title,summary,description,status,featured,sort_order,published_at,created_at,project_media(id,project_id,storage_path,media_type,alt_text,caption,display_role,sort_order,created_at)")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -278,6 +279,7 @@ export function AdminConsole() {
       storage_path: path,
       media_type: mediaType,
       alt_text: mediaType === "image" ? file.name.replace(/\.[^.]+$/, "") : null,
+      display_role: "gallery",
       sort_order: nextSortOrder,
     });
 
@@ -290,6 +292,64 @@ export function AdminConsole() {
 
     setBusy(false);
     setMessage("Project media uploaded.");
+    await loadProjects();
+  }
+
+  async function uploadComparison(project: Project, role: "before" | "after", file: File) {
+    if (!isStaff) return;
+    if (!file.type.startsWith("image/")) {
+      setMessage("Before and After media must be an image.");
+      return;
+    }
+
+    const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+    const path = `${project.id}/${role}-${crypto.randomUUID()}-${safeName}`;
+    const existing = project.project_media.find((item) => item.display_role === role);
+
+    setBusy(true);
+    setMessage("");
+    const { error: uploadError } = await supabase.storage
+      .from("project-media")
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+
+    if (uploadError) {
+      setBusy(false);
+      setMessage(uploadError.message);
+      return;
+    }
+
+    const payload = {
+      storage_path: path,
+      media_type: "image" as const,
+      alt_text: `${project.title} ${role}`,
+      display_role: role,
+    };
+
+    if (existing) {
+      const { error } = await supabase.from("project_media").update(payload).eq("id", existing.id);
+      if (error) {
+        await supabase.storage.from("project-media").remove([path]);
+        setBusy(false);
+        setMessage(error.message);
+        return;
+      }
+      await supabase.storage.from("project-media").remove([existing.storage_path]);
+    } else {
+      const { error } = await supabase.from("project_media").insert({
+        project_id: project.id,
+        ...payload,
+        sort_order: role === "before" ? -20 : -10,
+      });
+      if (error) {
+        await supabase.storage.from("project-media").remove([path]);
+        setBusy(false);
+        setMessage(error.message);
+        return;
+      }
+    }
+
+    setBusy(false);
+    setMessage(`${role === "before" ? "Before" : "After"} image updated.`);
     await loadProjects();
   }
 
@@ -317,7 +377,7 @@ export function AdminConsole() {
 
   async function setCover(project: Project, media: ProjectMedia) {
     if (!isStaff) return;
-    const ordered = sortMedia(project.project_media.filter((item) => item.id !== media.id));
+    const ordered = sortMedia(project.project_media.filter((item) => item.display_role === "gallery" && item.id !== media.id));
     setBusy(true);
     setMessage("");
 
@@ -344,7 +404,7 @@ export function AdminConsole() {
 
   async function moveMedia(project: Project, media: ProjectMedia, direction: -1 | 1) {
     if (!isStaff) return;
-    const ordered = sortMedia(project.project_media);
+    const ordered = sortMedia(project.project_media.filter((item) => item.display_role === "gallery"));
     const index = ordered.findIndex((item) => item.id === media.id);
     const swapIndex = index + direction;
     if (index < 0 || swapIndex < 0 || swapIndex >= ordered.length) return;
@@ -435,6 +495,9 @@ export function AdminConsole() {
           ) : projects.map((project) => {
             const draft = editing[project.id] ?? project;
             const media = sortMedia(project.project_media);
+            const galleryMedia = media.filter((item) => item.display_role === "gallery");
+            const beforeMedia = media.find((item) => item.display_role === "before");
+            const afterMedia = media.find((item) => item.display_role === "after");
             return (
               <article className={styles.projectCard} key={project.id}>
                 <div className={styles.projectHeading}>
@@ -465,8 +528,42 @@ export function AdminConsole() {
                   <button className={styles.secondaryButton} disabled={busy} onClick={() => setStatus(project, "archived")}>Archive</button>
                 </div>
 
+                <section className={styles.comparisonManager} aria-label={`Before and after images for ${project.title}`}>
+                  <div className={styles.comparisonHeader}>
+                    <div>
+                      <span className={styles.status}>Selected Work</span>
+                      <h3>Before & After</h3>
+                    </div>
+                    <p>Add one Before and one After image. Once this project is published, the pair can appear automatically in Selected Work.</p>
+                  </div>
+                  <div className={styles.comparisonSlots}>
+                    {(["before", "after"] as const).map((role) => {
+                      const item = role === "before" ? beforeMedia : afterMedia;
+                      return (
+                        <article className={styles.comparisonSlot} key={role}>
+                          <div className={styles.comparisonPreview}>
+                            {item ? <img src={projectMediaPublicUrl(item.storage_path)} alt={item.alt_text || `${project.title} ${role}`} /> : <span>No {role} image</span>}
+                            <b>{role}</b>
+                          </div>
+                          <div className={styles.comparisonActions}>
+                            <label className={styles.comparisonUpload}>
+                              <span>{item ? `Replace ${role}` : `Add ${role}`}</span>
+                              <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={busy} onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                if (file) void uploadComparison(project, role, file);
+                                event.currentTarget.value = "";
+                              }} />
+                            </label>
+                            {item ? <button type="button" className={styles.dangerButton} disabled={busy} onClick={() => deleteMedia(item)}>Delete</button> : null}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+
                 <label className={styles.upload}>
-                  <span>Upload project photo or MP4</span>
+                  <span>Upload gallery photo or MP4</span>
                   <input type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4" disabled={busy} onChange={(event) => {
                     const file = event.target.files?.[0];
                     if (file) void uploadMedia(project, file);
@@ -474,9 +571,9 @@ export function AdminConsole() {
                   }} />
                 </label>
 
-                {media.length > 0 ? (
+                {galleryMedia.length > 0 ? (
                   <div className={styles.mediaGrid}>
-                    {media.map((item, index) => (
+                    {galleryMedia.map((item, index) => (
                       <article className={styles.mediaCard} key={item.id}>
                         <div className={styles.mediaPreview}>
                           {item.media_type === "image" ? (
@@ -489,13 +586,13 @@ export function AdminConsole() {
                         <div className={styles.mediaActions}>
                           {index !== 0 ? <button disabled={busy} onClick={() => setCover(project, item)}>Set cover</button> : null}
                           <button disabled={busy || index === 0} onClick={() => moveMedia(project, item, -1)}>↑</button>
-                          <button disabled={busy || index === media.length - 1} onClick={() => moveMedia(project, item, 1)}>↓</button>
+                          <button disabled={busy || index === galleryMedia.length - 1} onClick={() => moveMedia(project, item, 1)}>↓</button>
                           <button className={styles.dangerButton} disabled={busy} onClick={() => deleteMedia(item)}>Delete</button>
                         </div>
                       </article>
                     ))}
                   </div>
-                ) : <p className={styles.emptyMedia}>No media yet. A project cannot be published until at least one file is uploaded.</p>}
+                ) : <p className={styles.emptyMedia}>No gallery media yet. Add photos or MP4 files here if you want them on the project page.</p>}
               </article>
             );
           })}

@@ -4,17 +4,21 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import styles from "./selected-work-carousel.module.css";
 
-type WorkCard = {
+export type SelectedWorkCard = {
+  id: string;
   title: string;
-  label: string;
-  secondary: string;
-  description: string;
-  href: string;
-  image: string;
-  alt: string;
+  beforeSrc: string;
+  afterSrc: string;
+  beforeAlt: string;
+  afterAlt: string;
+};
+
+type SelectedWorkCarouselProps = {
+  cards: SelectedWorkCard[];
 };
 
 type Direction = "prev" | "next";
+type ComparisonPhase = "before" | "transition" | "after" | "returning" | "split" | "manual";
 
 const MOTION_DURATION = 1300;
 const MOTION_STAGGER = 50;
@@ -22,53 +26,11 @@ const MOTION_EASING = "cubic-bezier(0.65, 0, 0, 1)";
 const MOTION_FAILSAFE = 250;
 const DRAG_THRESHOLD = 5;
 
-const cards: WorkCard[] = [
-  {
-    title: "Residential Renovation",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Placeholder media for a future client-supplied before-and-after renovation composition.",
-    href: "/services/residential-construction-renovation",
-    image: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1600&q=86",
-    alt: "Residential renovation framing used as temporary visual placeholder",
-  },
-  {
-    title: "Commercial Renewal",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Temporary visual direction for a future commercial project transformation card.",
-    href: "/services/commercial-construction-renovation",
-    image: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1600&q=86",
-    alt: "Commercial construction scene used as temporary visual placeholder",
-  },
-  {
-    title: "Roof Restoration",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Placeholder imagery until verified before-and-after project media is supplied for publication.",
-    href: "/services/roof-restoration",
-    image: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1600&q=86",
-    alt: "Residential roofing used as temporary visual placeholder",
-  },
-  {
-    title: "Tiling & Finish",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Temporary visual reference for a future client-supplied finish transformation.",
-    href: "/services/tiling",
-    image: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1600&q=86",
-    alt: "Tiling work used as temporary visual placeholder",
-  },
-  {
-    title: "Carpentry Detail",
-    label: "Before & After",
-    secondary: "Preview",
-    description: "Placeholder media for the future Selected Work library of verified client transformations.",
-    href: "/services/general-carpentry",
-    image: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1600&q=86",
-    alt: "Carpentry work used as temporary visual placeholder",
-  },
-];
+const BEFORE_HOLD = 650;
+const REVEAL_DURATION = 1250;
+const AFTER_HOLD = 420;
+const CENTER_DURATION = 820;
+const BETWEEN_CARDS = 260;
 
 function Arrow({ next = false }: { next?: boolean }) {
   return (
@@ -78,17 +40,41 @@ function Arrow({ next = false }: { next?: boolean }) {
   );
 }
 
-export function SelectedWorkCarousel() {
+function CompareHandleIcon() {
+  return (
+    <svg viewBox="0 0 44 24" fill="none" aria-hidden="true">
+      <path d="M17 7L11 12L17 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M27 7L33 12L27 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function easeInOut(value: number) {
+  return value < 0.5
+    ? 4 * value * value * value
+    : 1 - Math.pow(-2 * value + 2, 3) / 2;
+}
+
+export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
+  const handleRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const animationsRef = useRef<Animation[]>([]);
   const commitTimerRef = useRef<number | null>(null);
+  const comparisonTimerRef = useRef<number | null>(null);
+  const comparisonFrameRef = useRef<number | null>(null);
+  const comparisonRunRef = useRef(0);
+  const splitValuesRef = useRef<number[]>(cards.map(() => 0));
   const animatingRef = useRef(false);
   const dragRef = useRef({ pointerId: null as number | null, startX: 0, startScroll: 0, moved: false });
+  const compareDragRef = useRef({ pointerId: null as number | null, cardIndex: -1 });
+
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isAtStart, setIsAtStart] = useState(true);
   const [isAtEnd, setIsAtEnd] = useState(false);
+  const [comparisonDraggingIndex, setComparisonDraggingIndex] = useState<number | null>(null);
+  const [phases, setPhases] = useState<ComparisonPhase[]>(() => cards.map(() => "before"));
 
   function cardElements() {
     return cardRefs.current.filter((card): card is HTMLElement => Boolean(card));
@@ -96,6 +82,152 @@ export function SelectedWorkCarousel() {
 
   function reducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function setPhase(index: number, phase: ComparisonPhase) {
+    setPhases((current) => {
+      if (current[index] === phase) return current;
+      const next = [...current];
+      next[index] = phase;
+      return next;
+    });
+  }
+
+  function applySplit(index: number, value: number) {
+    const card = cardRefs.current[index];
+    if (!card) return;
+
+    const split = Math.max(0, Math.min(100, value));
+    splitValuesRef.current[index] = split;
+
+    card.style.setProperty("--split", `${split}%`);
+    card.style.setProperty("--after-label-x", `${split / 2}%`);
+    card.style.setProperty("--before-label-x", `${split + (100 - split) / 2}%`);
+
+    const handle = handleRefs.current[index];
+    if (handle) handle.setAttribute("aria-valuenow", String(Math.round(split)));
+  }
+
+  function stopComparisonSequence() {
+    comparisonRunRef.current += 1;
+
+    if (comparisonFrameRef.current !== null) {
+      window.cancelAnimationFrame(comparisonFrameRef.current);
+      comparisonFrameRef.current = null;
+    }
+
+    if (comparisonTimerRef.current !== null) {
+      window.clearTimeout(comparisonTimerRef.current);
+      comparisonTimerRef.current = null;
+    }
+  }
+
+  function waitFor(ms: number, token: number) {
+    return new Promise<boolean>((resolve) => {
+      comparisonTimerRef.current = window.setTimeout(() => {
+        comparisonTimerRef.current = null;
+        resolve(token === comparisonRunRef.current);
+      }, ms);
+    });
+  }
+
+  function animateSplit(index: number, from: number, to: number, duration: number, token: number) {
+    return new Promise<boolean>((resolve) => {
+      if (token !== comparisonRunRef.current) {
+        resolve(false);
+        return;
+      }
+
+      if (reducedMotion()) {
+        applySplit(index, to);
+        resolve(true);
+        return;
+      }
+
+      const startedAt = performance.now();
+
+      const frame = (now: number) => {
+        if (token !== comparisonRunRef.current) {
+          comparisonFrameRef.current = null;
+          resolve(false);
+          return;
+        }
+
+        const progress = Math.min(1, (now - startedAt) / duration);
+        const eased = easeInOut(progress);
+        applySplit(index, from + (to - from) * eased);
+
+        if (progress >= 1) {
+          comparisonFrameRef.current = null;
+          resolve(true);
+          return;
+        }
+
+        comparisonFrameRef.current = window.requestAnimationFrame(frame);
+      };
+
+      comparisonFrameRef.current = window.requestAnimationFrame(frame);
+    });
+  }
+
+  function visibleCardIndexes() {
+    const track = trackRef.current;
+    if (!track) return [] as number[];
+
+    const trackRect = track.getBoundingClientRect();
+
+    return cardRefs.current
+      .map((card, index) => {
+        if (!card) return null;
+        const rect = card.getBoundingClientRect();
+        const visibleWidth = Math.min(rect.right, trackRect.right) - Math.max(rect.left, trackRect.left);
+        if (visibleWidth <= Math.min(48, rect.width * 0.15)) return null;
+        return { index, left: rect.left };
+      })
+      .filter((item): item is { index: number; left: number } => Boolean(item))
+      .sort((a, b) => a.left - b.left)
+      .map((item) => item.index);
+  }
+
+  function restartVisibleComparisons() {
+    stopComparisonSequence();
+    const token = comparisonRunRef.current;
+    const visible = visibleCardIndexes();
+    if (!visible.length) return;
+
+    visible.forEach((index) => {
+      applySplit(index, 0);
+      setPhase(index, "before");
+    });
+
+    if (reducedMotion()) {
+      visible.forEach((index) => {
+        applySplit(index, 50);
+        setPhase(index, "split");
+      });
+      return;
+    }
+
+    void (async () => {
+      for (const index of visible) {
+        if (token !== comparisonRunRef.current) return;
+
+        setPhase(index, "before");
+        if (!(await waitFor(BEFORE_HOLD, token))) return;
+
+        setPhase(index, "transition");
+        if (!(await animateSplit(index, 0, 100, REVEAL_DURATION, token))) return;
+
+        setPhase(index, "after");
+        if (!(await waitFor(AFTER_HOLD, token))) return;
+
+        setPhase(index, "returning");
+        if (!(await animateSplit(index, 100, 50, CENTER_DURATION, token))) return;
+
+        setPhase(index, "split");
+        if (!(await waitFor(BETWEEN_CARDS, token))) return;
+      }
+    })();
   }
 
   function cancelActiveAnimations() {
@@ -111,6 +243,10 @@ export function SelectedWorkCarousel() {
     if (!track) return;
     setIsAtStart(track.scrollLeft <= 1);
     setIsAtEnd(Math.ceil(track.scrollLeft + track.clientWidth) >= track.scrollWidth - 1);
+  }
+
+  function scheduleComparisonReplay(delay = 180) {
+    window.setTimeout(() => restartVisibleComparisons(), delay);
   }
 
   function snapPositions(currentScroll: number) {
@@ -194,6 +330,7 @@ export function SelectedWorkCarousel() {
       animatingRef.current = false;
       setIsAnimating(false);
       checkScrollState();
+      scheduleComparisonReplay();
     });
   }
 
@@ -201,14 +338,22 @@ export function SelectedWorkCarousel() {
     const track = trackRef.current;
     if (!track || animatingRef.current || isDragging) return;
 
+    stopComparisonSequence();
+
     const targetScroll = findAdjacentSnap(track.scrollLeft, direction);
     const delta = targetScroll - track.scrollLeft;
-    if (delta === 0) return;
+    if (delta === 0) {
+      scheduleComparisonReplay(80);
+      return;
+    }
 
     const affectedCards = reducedMotion() ? [] : getCardsForStep(delta);
     if (!affectedCards.length) {
       track.scrollBy({ left: delta, behavior: "auto" });
-      window.requestAnimationFrame(checkScrollState);
+      window.requestAnimationFrame(() => {
+        checkScrollState();
+        scheduleComparisonReplay();
+      });
       return;
     }
 
@@ -243,22 +388,33 @@ export function SelectedWorkCarousel() {
   }
 
   useEffect(() => {
+    splitValuesRef.current = cards.map(() => 0);
+    setPhases(cards.map(() => "before"));
+
     const track = trackRef.current;
     if (!track) return;
 
     const onScroll = () => checkScrollState();
-    const onResize = () => checkScrollState();
+    const onResize = () => {
+      checkScrollState();
+      scheduleComparisonReplay(120);
+    };
+
     track.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     checkScrollState();
 
+    const initialTimer = window.setTimeout(() => restartVisibleComparisons(), 420);
+
     return () => {
+      window.clearTimeout(initialTimer);
       track.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       if (commitTimerRef.current !== null) window.clearTimeout(commitTimerRef.current);
       cancelActiveAnimations();
+      stopComparisonSequence();
     };
-  }, []);
+  }, [cards.length]);
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "touch" || animatingRef.current || event.button !== 0) return;
@@ -275,6 +431,7 @@ export function SelectedWorkCarousel() {
     if (!dragRef.current.moved) {
       if (Math.abs(delta) < DRAG_THRESHOLD) return;
       dragRef.current.moved = true;
+      stopComparisonSequence();
       setIsDragging(true);
       track.setPointerCapture(event.pointerId);
     }
@@ -304,9 +461,69 @@ export function SelectedWorkCarousel() {
 
     if (target !== track.scrollLeft) {
       track.scrollTo({ left: target, behavior: reducedMotion() ? "auto" : "smooth" });
+      scheduleComparisonReplay(reducedMotion() ? 100 : 650);
     } else {
       checkScrollState();
+      scheduleComparisonReplay();
     }
+  }
+
+  function updateManualSplit(cardIndex: number, clientX: number) {
+    const card = cardRefs.current[cardIndex];
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const split = ((clientX - rect.left) / rect.width) * 100;
+    applySplit(cardIndex, split);
+  }
+
+  function onComparePointerDown(event: React.PointerEvent<HTMLSpanElement>, cardIndex: number) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    stopComparisonSequence();
+    compareDragRef.current = { pointerId: event.pointerId, cardIndex };
+    setComparisonDraggingIndex(cardIndex);
+    setPhase(cardIndex, "manual");
+    event.currentTarget.setPointerCapture(event.pointerId);
+    updateManualSplit(cardIndex, event.clientX);
+  }
+
+  function onComparePointerMove(event: React.PointerEvent<HTMLSpanElement>, cardIndex: number) {
+    if (compareDragRef.current.pointerId !== event.pointerId || compareDragRef.current.cardIndex !== cardIndex) return;
+    event.preventDefault();
+    event.stopPropagation();
+    updateManualSplit(cardIndex, event.clientX);
+  }
+
+  function onComparePointerUp(event: React.PointerEvent<HTMLSpanElement>, cardIndex: number) {
+    if (compareDragRef.current.pointerId !== event.pointerId || compareDragRef.current.cardIndex !== cardIndex) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    compareDragRef.current = { pointerId: null, cardIndex: -1 };
+    setComparisonDraggingIndex(null);
+    setPhase(cardIndex, "manual");
+  }
+
+  function onCompareKeyDown(event: React.KeyboardEvent<HTMLSpanElement>, cardIndex: number) {
+    let next = splitValuesRef.current[cardIndex] ?? 50;
+
+    if (event.key === "ArrowLeft") next -= 5;
+    else if (event.key === "ArrowRight") next += 5;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = 100;
+    else return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    stopComparisonSequence();
+    setPhase(cardIndex, "manual");
+    applySplit(cardIndex, next);
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLElement>) {
@@ -319,11 +536,12 @@ export function SelectedWorkCarousel() {
     }
   }
 
+  if (!cards.length) return null;
+
   return (
     <section className={styles.section} id="projects" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
       <div className={styles.heading}>
         <h2 id="selected-work-title">Selected Work</h2>
-        <p>Before-and-after transformations will live here. The current imagery is temporary and will be replaced with verified client project composites.</p>
       </div>
 
       <div className={styles.carouselInner}>
@@ -336,28 +554,66 @@ export function SelectedWorkCarousel() {
           onPointerCancel={onPointerUp}
           aria-label="Selected work carousel"
         >
-          {cards.map((card, cardIndex) => (
-            <article
-              key={card.title}
-              ref={(node) => { cardRefs.current[cardIndex] = node; }}
-              className={styles.card}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${cardIndex + 1} of ${cards.length}`}
-            >
-              <img className={styles.media} src={card.image} alt={card.alt} draggable={false} loading="eager" decoding="async" />
-              <div className={styles.pills}>
-                <div className={styles.pill}>
-                  <span>{card.label}</span>
-                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8H13.5M9 4L13.5 8L9 12" /></svg>
+          {cards.map((card, cardIndex) => {
+            const phase = phases[cardIndex] ?? "before";
+            const phaseClass = {
+              before: styles.phaseBefore,
+              transition: styles.phaseTransition,
+              after: styles.phaseAfter,
+              returning: styles.phaseReturning,
+              split: styles.phaseSplit,
+              manual: styles.phaseManual,
+            }[phase];
+
+            const handleReady =
+              (phase === "split" || phase === "manual") && comparisonDraggingIndex !== cardIndex;
+
+
+            return (
+              <article
+                key={card.id}
+                ref={(node) => { cardRefs.current[cardIndex] = node; }}
+                className={`${styles.card} ${phaseClass}`}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${cardIndex + 1} of ${cards.length}: ${card.title}`}
+              >
+                <div className={styles.comparison} aria-label={`Before and after comparison for ${card.title}`}>
+                  <img className={styles.beforeMedia} src={card.beforeSrc} alt={card.beforeAlt} draggable={false} loading="eager" decoding="async" />
+                  <div className={styles.afterReveal} aria-hidden="true">
+                    <img className={styles.afterMedia} src={card.afterSrc} alt="" draggable={false} loading="eager" decoding="async" />
+                  </div>
                 </div>
-                <div className={styles.pill}>{card.secondary}</div>
-              </div>
-              <h3>{card.title}</h3>
-              <div className={styles.description}><p>{card.description}</p></div>
-              <Link className={styles.cta} href={card.href}>View service</Link>
-            </article>
-          ))}
+
+                <span className={styles.wipeLine} aria-hidden="true" />
+
+                <span
+                  ref={(node) => { handleRefs.current[cardIndex] = node; }}
+                  className={`${styles.comparisonHandle} ${handleReady ? styles.handleReady : ""}`}
+                  role="slider"
+                  tabIndex={phase === "split" || phase === "manual" ? 0 : -1}
+                  aria-label={`Before and after comparison slider for ${card.title}`}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(splitValuesRef.current[cardIndex] ?? 0)}
+                  onPointerDown={(event) => onComparePointerDown(event, cardIndex)}
+                  onPointerMove={(event) => onComparePointerMove(event, cardIndex)}
+                  onPointerUp={(event) => onComparePointerUp(event, cardIndex)}
+                  onPointerCancel={(event) => onComparePointerUp(event, cardIndex)}
+                  onKeyDown={(event) => onCompareKeyDown(event, cardIndex)}
+                >
+                  <CompareHandleIcon />
+                </span>
+
+                <div className={styles.comparisonLabels} aria-hidden="true">
+                  <span className={styles.afterLabel}>After</span>
+                  <span className={styles.beforeLabel}>Before</span>
+                </div>
+
+                <Link className={styles.cta} href="/#services">View service</Link>
+              </article>
+            );
+          })}
         </div>
 
         <div className={styles.controls} aria-label="Selected work carousel controls">

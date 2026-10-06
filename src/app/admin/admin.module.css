@@ -351,6 +351,114 @@
   border-top: 1px solid rgb(245 243 237 / 10%);
 }
 
+.comparisonManager {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid rgb(245 243 237 / 10%);
+}
+
+.comparisonHeader {
+  display: grid;
+  grid-template-columns: minmax(0, .7fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.comparisonHeader h3 {
+  margin: 2px 0 0;
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(1.45rem, 2vw, 2.1rem);
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+
+.comparisonHeader p {
+  margin: 0;
+  color: rgb(245 243 237 / 58%);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+
+.comparisonSlots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.comparisonSlot {
+  overflow: hidden;
+  border: 1px solid rgb(245 243 237 / 10%);
+  border-radius: 18px;
+  background: rgb(0 0 0 / 14%);
+}
+
+.comparisonPreview {
+  position: relative;
+  display: grid;
+  aspect-ratio: 2 / 3;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgb(125 175 202 / 12%), rgb(255 255 255 / 2%)),
+    #0d0d0c;
+  color: rgb(245 243 237 / 42%);
+  font-size: .8rem;
+}
+
+.comparisonPreview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comparisonPreview b {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 7px 10px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 999px;
+  background: rgb(15 15 14 / 72%);
+  color: #fff;
+  backdrop-filter: blur(9px);
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.comparisonActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.comparisonUpload {
+  position: relative;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f5f3ed;
+  color: #171715;
+  font-size: .7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.comparisonUpload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .mediaGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -454,7 +562,9 @@
   }
 
   .editGrid,
-  .mediaGrid {
+  .mediaGrid,
+  .comparisonSlots,
+  .comparisonHeader {
     grid-template-columns: 1fr;
   }
 

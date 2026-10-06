@@ -28,6 +28,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   if (!project) notFound();
 
+  const galleryMedia = project.project_media.filter((item) => item.display_role === "gallery");
+
   return (
     <main className={styles.page} id="main-content">
       <PublicHeader />
@@ -38,8 +40,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         {project.summary ? <p className={styles.summary}>{project.summary}</p> : null}
       </section>
 
-      {project.project_media.length > 0 ? (
-        <ProjectGallery projectTitle={project.title} media={project.project_media} />
+      {galleryMedia.length > 0 ? (
+        <ProjectGallery projectTitle={project.title} media={galleryMedia} />
       ) : null}
 
       {project.description ? (
