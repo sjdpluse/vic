@@ -377,7 +377,7 @@ export function AdminConsole() {
 
   async function setCover(project: Project, media: ProjectMedia) {
     if (!isStaff) return;
-    const ordered = sortMedia(project.project_media.filter((item) => item.id !== media.id));
+    const ordered = sortMedia(project.project_media.filter((item) => item.display_role === "gallery" && item.id !== media.id));
     setBusy(true);
     setMessage("");
 
@@ -404,7 +404,7 @@ export function AdminConsole() {
 
   async function moveMedia(project: Project, media: ProjectMedia, direction: -1 | 1) {
     if (!isStaff) return;
-    const ordered = sortMedia(project.project_media);
+    const ordered = sortMedia(project.project_media.filter((item) => item.display_role === "gallery"));
     const index = ordered.findIndex((item) => item.id === media.id);
     const swapIndex = index + direction;
     if (index < 0 || swapIndex < 0 || swapIndex >= ordered.length) return;
