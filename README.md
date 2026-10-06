@@ -17,7 +17,8 @@ The website must feel credible, expensive and intentional from the first viewpor
 - Premium architectural/editorial visual direction
 - Scroll-scrubbed cinematic frame-sequence storytelling
 - Smooth but accessible motion system
-- Secure admin enquiry portal
+- Landing-page Selected Work before/after carousel
+- Secure admin Selected Work and enquiry portal
 - Consultation/enquiry workflow with image upload
 - Email notifications
 - Mobile-first performance strategy
@@ -34,7 +35,7 @@ The website must feel credible, expensive and intentional from the first viewpor
 - Lenis or an equivalent restrained smooth-scroll layer only if it passes accessibility/performance review
 - AVIF/WebP frame sequences with dedicated desktop and mobile variants
 - External object storage/CDN for production master video and frame assets; do not place large frame sets in Git
-- Supabase Auth + Postgres + Storage for enquiries and private enquiry media
+- Supabase Auth + Postgres + Storage for Selected Work, enquiries and private enquiry media
 - Transactional email provider such as Resend for enquiry notifications
 
 ## Frame-sequence rule
@@ -54,6 +55,6 @@ The sequence must be reversible through scroll and must not depend on autoplay v
 
 ## Source-of-truth rule
 
-GitHub stores application code, migrations, documentation and small static brand assets. Customer-uploaded enquiry media, master cinematic video and large production frame sequences must not be committed to the repository.
+GitHub stores application code, migrations, documentation and small static brand assets. Selected Work media and customer-uploaded enquiry media live in Supabase Storage; master cinematic video and large production frame sequences must not be committed to the repository.
 
 See `AGENTS.md` and `docs/` before implementation.

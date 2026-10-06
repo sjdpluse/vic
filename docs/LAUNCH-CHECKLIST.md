@@ -37,8 +37,8 @@
 - Add the site to Google Search Console and submit the sitemap only after the custom domain is live.
 
 ## Final QA
-- Desktop and mobile: hero sequence, navigation, services, About, contact, privacy and quote form.
-- Keyboard: focus visibility, mobile menu, service carousel controls and admin enquiry controls.
+- Desktop and mobile: hero sequence, navigation, services, Selected Work, About, contact, privacy and quote form.
+- Keyboard: focus visibility, mobile menu, service carousel controls, Selected Work comparison controls and admin controls.
 - Reduced motion: verify the hero fallback remains usable.
 - Test phone and email links.
 - Confirm no secrets are exposed in client bundles or committed files.

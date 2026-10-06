@@ -100,18 +100,19 @@ Preferred backend:
 Primary entities:
 - `site_settings`
 - `profiles` / admin authorization
+- `selected_work_items`
 - `enquiries`
 - `enquiry_media`
 
-The product no longer includes a public project portfolio, project detail routes or a project CMS.
+The product no longer includes a public project portfolio, project detail routes or a project CMS. The landing-page Selected Work carousel is a separate feature backed only by Before/After media pairs.
 
 ## Admin
 
 Protected routes:
-- `/admin` (redirects to the active admin area)
-- `/admin/enquiries`
+- `/admin` for Selected Work Before/After management
+- `/admin/enquiries` for enquiry management
 
-The admin portal is currently enquiry-only. Authorization is backed by Supabase Auth, profile roles and RLS/database policy.
+Selected Work administration intentionally has no project title, slug, summary, description, publish/archive or gallery model. Authorization is backed by Supabase Auth, profile roles and RLS/database policy.
 
 ## Consultation / quote system
 

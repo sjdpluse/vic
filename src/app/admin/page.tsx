@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { AdminPortalNav } from "./admin-portal-nav";
+import { SelectedWorkConsole } from "./selected-work-console";
 
-export const metadata: Metadata = {
-  title: "Admin | VIC Premier Construction Team",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = { title: "Selected Work Admin | VIC Premier Construction Team", robots: { index: false, follow: false } };
 
 export default function AdminPage() {
-  redirect("/admin/enquiries");
+  return <><AdminPortalNav /><SelectedWorkConsole /></>;
 }

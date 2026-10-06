@@ -6,7 +6,7 @@ This file is mandatory reading for every AI agent and human contributor.
 
 **Business:** VIC PREMIER CONSTRUCTION TEAM  
 **Market:** Melbourne, Victoria, Australia  
-**Product:** Premium cinematic construction / renovation website with scroll-driven frame-sequence storytelling and an admin enquiry system.
+**Product:** Premium cinematic construction / renovation website with scroll-driven frame-sequence storytelling, Selected Work before/after media and an admin enquiry system.
 
 ## Non-negotiable product direction
 
@@ -108,9 +108,10 @@ Preferred backend:
 Current admin scope:
 - secure `/admin` entry point
 - explicit admin authorization
+- Selected Work Before/After card management only
 - enquiry inbox and status workflow
 - private enquiry attachment access through short-lived signed URLs
-- no project CRUD, project portfolio CMS or project media management unless the product direction is explicitly changed again
+- no project CRUD, project detail pages, title/slug/summary/description workflow, publish/archive states or project galleries unless the product direction is explicitly changed again
 
 ## Consultation/enquiry workflow
 
@@ -148,7 +149,7 @@ Email notifications should send through a transactional provider; secrets remain
 
 ## Engineering rules
 
-- Never commit secrets or customer enquiry media.
+- Never commit secrets, Selected Work media or customer enquiry media.
 - Never commit master transformation videos or large production frame sets.
 - Keep privileged Supabase keys server-only.
 - Validate public and admin writes on the server.
