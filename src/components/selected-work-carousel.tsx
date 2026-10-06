@@ -4,11 +4,17 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import styles from "./selected-work-carousel.module.css";
 
-type WorkCard = {
+export type SelectedWorkCard = {
+  id: string;
   title: string;
-  href: string;
-  image: string;
-  alt: string;
+  beforeSrc: string;
+  afterSrc: string;
+  beforeAlt: string;
+  afterAlt: string;
+};
+
+type SelectedWorkCarouselProps = {
+  cards: SelectedWorkCard[];
 };
 
 type Direction = "prev" | "next";
@@ -19,39 +25,6 @@ const MOTION_EASING = "cubic-bezier(0.65, 0, 0, 1)";
 const MOTION_FAILSAFE = 250;
 const DRAG_THRESHOLD = 5;
 
-const cards: WorkCard[] = [
-  {
-    title: "Residential Renovation",
-    href: "/services/residential-construction-renovation",
-    image: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1600&q=86",
-    alt: "Residential renovation framing used as temporary visual placeholder",
-  },
-  {
-    title: "Commercial Renewal",
-    href: "/services/commercial-construction-renovation",
-    image: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1600&q=86",
-    alt: "Commercial construction scene used as temporary visual placeholder",
-  },
-  {
-    title: "Roof Restoration",
-    href: "/services/roof-restoration",
-    image: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1600&q=86",
-    alt: "Residential roofing used as temporary visual placeholder",
-  },
-  {
-    title: "Tiling & Finish",
-    href: "/services/tiling",
-    image: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1600&q=86",
-    alt: "Tiling work used as temporary visual placeholder",
-  },
-  {
-    title: "Carpentry Detail",
-    href: "/services/general-carpentry",
-    image: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1600&q=86",
-    alt: "Carpentry work used as temporary visual placeholder",
-  },
-];
-
 function Arrow({ next = false }: { next?: boolean }) {
   return (
     <svg viewBox="0 0 60 60" fill="none" aria-hidden="true" className={next ? styles.nextArrow : undefined}>
@@ -60,7 +33,7 @@ function Arrow({ next = false }: { next?: boolean }) {
   );
 }
 
-export function SelectedWorkCarousel() {
+export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const animationsRef = useRef<Animation[]>([]);
@@ -301,11 +274,12 @@ export function SelectedWorkCarousel() {
     }
   }
 
+  if (!cards.length) return null;
+
   return (
     <section className={styles.section} id="projects" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
       <div className={styles.heading}>
         <h2 id="selected-work-title">Selected Work</h2>
-        <p>Before-and-after transformations will live here. The current imagery is temporary and will be replaced with verified client project composites.</p>
       </div>
 
       <div className={styles.carouselInner}>
@@ -320,15 +294,21 @@ export function SelectedWorkCarousel() {
         >
           {cards.map((card, cardIndex) => (
             <article
-              key={card.title}
+              key={card.id}
               ref={(node) => { cardRefs.current[cardIndex] = node; }}
               className={styles.card}
               role="group"
               aria-roledescription="slide"
-              aria-label={`${cardIndex + 1} of ${cards.length}`}
+              aria-label={`${cardIndex + 1} of ${cards.length}: ${card.title}`}
             >
-              <img className={styles.media} src={card.image} alt={card.alt} draggable={false} loading="eager" decoding="async" />
-              <Link className={styles.cta} href={card.href}>View service</Link>
+              <div className={styles.comparison} aria-label={`Before and after comparison for ${card.title}`}>
+                <img className={styles.beforeMedia} src={card.beforeSrc} alt={card.beforeAlt} draggable={false} loading="eager" decoding="async" />
+                <div className={styles.afterReveal} aria-hidden="true">
+                  <img className={styles.afterMedia} src={card.afterSrc} alt="" draggable={false} loading="eager" decoding="async" />
+                </div>
+                <span className={styles.wipeLine} aria-hidden="true" />
+              </div>
+              <Link className={styles.cta} href="/#services">View service</Link>
             </article>
           ))}
         </div>
