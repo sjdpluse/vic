@@ -35,6 +35,7 @@ export function HeroSequence() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
+  const scrollCueRef = useRef<HTMLAnchorElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const loadedRef = useRef(new Map<number, HTMLImageElement>());
   const loadedBySrcRef = useRef(new Map<string, HTMLImageElement>());
@@ -435,6 +436,7 @@ export function HeroSequence() {
       const cta = copy.querySelector<HTMLElement>(".hero__cta");
       const vision = copy.querySelector<HTMLElement>(".hero__title-line--serif");
       const shape = copy.querySelector<HTMLElement>(".hero__title-line--sans");
+      const scrollCue = scrollCueRef.current;
 
       // Exit order: supporting copy first, then "Your Vision", then "We Shape".
       const supportingExit = fadeSegment(progress, 0.07, 0.22, profileName === "mobile" ? 28 : 36, 5);
@@ -445,6 +447,15 @@ export function HeroSequence() {
       if (cta) gsap.set(cta, supportingExit);
       if (vision) gsap.set(vision, visionExit);
       if (shape) gsap.set(shape, shapeExit);
+
+      if (scrollCue) {
+        const cueProgress = gsap.utils.clamp(0, 1, progress / 0.12);
+        gsap.set(scrollCue, {
+          opacity: 1 - cueProgress,
+          y: 10 * cueProgress,
+          pointerEvents: cueProgress > 0.85 ? "none" : "auto",
+        });
+      }
 
       // Keep the copy container itself stable so each child can leave independently.
       gsap.set(copy, { y: 0, opacity: 1 });
@@ -492,7 +503,7 @@ export function HeroSequence() {
   const scrollTrackHeight = reducedMotion
     ? "112svh"
     : profileName === "mobile"
-      ? "520svh"
+      ? "360svh"
       : "440svh";
 
   return (
@@ -613,6 +624,18 @@ export function HeroSequence() {
             aria-hidden="true"
           />
         </div>
+
+        <a
+          className="hero__scroll-cue"
+          ref={scrollCueRef}
+          href="#services"
+          aria-label="Scroll down to Our Services"
+        >
+          <span className="hero__scroll-cue-label">Scroll</span>
+          <span className="hero__scroll-cue-track" aria-hidden="true">
+            <span />
+          </span>
+        </a>
       </div>
     </section>
   );
