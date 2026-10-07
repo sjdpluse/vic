@@ -19,7 +19,7 @@
   font-size: clamp(72px, 9vw, 150px);
   font-weight: 400;
   line-height: .78;
-  letter-spacing: normal;
+  letter-spacing: -.045em;
 }
 
 .stage {
@@ -127,12 +127,12 @@
 
 .content h3 {
   margin: 0;
-  font-family: var(--font-rem), Arial, Helvetica, sans-serif;
+  font-family: var(--font-rem), Arial, Helvetica, sans-serif !important;
   font-size: 22px;
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -.02em;
-  text-align: center;
+  text-align: left;
 }
 
 .reveal {
@@ -164,7 +164,7 @@
 .centered .card:hover .reveal,
 .centered .card:focus-within .reveal {
   max-height: 130px;
-  margin: 12px 0 16px;
+  margin: 10px 0 0;
   opacity: 1;
   transform: translateY(0);
 }
@@ -186,10 +186,10 @@
   color: #fff;
   backdrop-filter: blur(12px) saturate(135%);
   -webkit-backdrop-filter: blur(12px) saturate(135%);
-  font-family: var(--font-rem), Arial, Helvetica, sans-serif;
   font-size: 12px;
   font-weight: 500;
   line-height: normal;
+  margin-top: 14px;
   transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
@@ -263,7 +263,7 @@
   .content h3 { font-size: 30px; }
   .content p { font-size: 15px; line-height: 1.48; -webkit-line-clamp: 4; line-clamp: 4; }
   .centered .card:hover .reveal,
-  .centered .card:focus-within .reveal { max-height: 170px; margin: 14px 0 20px; }
+  .centered .card:focus-within .reveal { max-height: 170px; margin: 12px 0 0; }
   .cta { padding: 14px 28px; font-size: 16px; }
   .controls { gap: 12px; margin-top: 0; }
 }
@@ -277,7 +277,7 @@
   .heading h2 {
     font-size: clamp(58px, 18vw, 88px);
     line-height: .8;
-    letter-spacing: normal;
+    letter-spacing: -.045em;
   }
   .stage { height: 350px; }
   .circle { top: 50%; }
