@@ -249,19 +249,32 @@ export function HeroSequence() {
 
   useEffect(() => {
     let previousY = window.scrollY;
+    let accumulatedDelta = 0;
     let ticking = false;
 
     const updateHeader = () => {
       const currentY = window.scrollY;
       const delta = currentY - previousY;
 
-      if (Math.abs(delta) > 4) {
-        // Google-Labs-style behavior: hide while travelling down the page,
-        // reveal again as soon as the user reverses direction upward.
-        setHeaderHidden(currentY > 72 && delta > 0);
-        previousY = currentY;
+      if (currentY <= 20) {
+        setHeaderHidden(false);
+        accumulatedDelta = 0;
+      } else if (delta !== 0) {
+        if (Math.sign(delta) !== Math.sign(accumulatedDelta)) accumulatedDelta = 0;
+        accumulatedDelta += delta;
+
+        if (accumulatedDelta >= 10) {
+          // Requested interaction: scrolling down reveals the header.
+          setHeaderHidden(false);
+          accumulatedDelta = 0;
+        } else if (accumulatedDelta <= -10) {
+          // Scrolling up hides it softly.
+          setHeaderHidden(true);
+          accumulatedDelta = 0;
+        }
       }
 
+      previousY = currentY;
       ticking = false;
     };
 
@@ -455,6 +468,59 @@ export function HeroSequence() {
         background: "#f5f3ed",
       }}
     >
+      <header className={headerHidden ? "site-header site-header--hidden" : "site-header"}>
+        <div className="header__blur" aria-hidden="true">
+          <span className="header__blur-layer header__blur-layer--1" />
+          <span className="header__blur-layer header__blur-layer--2" />
+          <span className="header__blur-layer header__blur-layer--3" />
+          <span className="header__blur-layer header__blur-layer--4" />
+          <span className="header__blur-layer header__blur-layer--5" />
+        </div>
+        <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
+          <span>VIC PREMIER</span>
+          <small>CONSTRUCTION TEAM</small>
+        </a>
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          <a href="#about">About</a>
+          <a href="#services">Services</a>
+          <a href="#selected-work">Selected Work</a>
+          <a href="#process">Process</a>
+        </nav>
+        <div className="header-actions">
+          <a className="header-quote-link" href="#consultation">
+            <span>Free Quote</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <button
+            className="menu-toggle"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
+            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+
+      <div
+        id="mobile-navigation"
+        className={menuOpen ? "mobile-nav mobile-nav--open" : "mobile-nav"}
+        aria-hidden={!menuOpen}
+      >
+        <nav aria-label="Mobile navigation">
+          <a href="#about" onClick={() => setMenuOpen(false)}><span>01</span>About</a>
+          <a href="#services" onClick={() => setMenuOpen(false)}><span>02</span>Services</a>
+          <a href="#selected-work" onClick={() => setMenuOpen(false)}><span>03</span>Selected Work</a>
+          <a href="#process" onClick={() => setMenuOpen(false)}><span>04</span>Process</a>
+        </nav>
+        <a className="mobile-nav__quote" href="#consultation" onClick={() => setMenuOpen(false)}>
+          Request a Free Quote <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+
       <div
         className="hero__viewport"
         style={{
@@ -470,56 +536,6 @@ export function HeroSequence() {
             "linear-gradient(180deg, #7dafca 0%, #7dafca 52%, #dce6e5 70%, #f5f3ed 82%, #f5f3ed 100%)",
         }}
       >
-        <header className={headerHidden ? "site-header site-header--hidden" : "site-header"}>
-          <div className="header__blur" aria-hidden="true">
-            <span className="header__blur-layer header__blur-layer--1" />
-            <span className="header__blur-layer header__blur-layer--2" />
-            <span className="header__blur-layer header__blur-layer--3" />
-            <span className="header__blur-layer header__blur-layer--4" />
-            <span className="header__blur-layer header__blur-layer--5" />
-          </div>
-          <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
-            <span>VIC PREMIER</span>
-            <small>CONSTRUCTION TEAM</small>
-          </a>
-          <nav className="desktop-nav" aria-label="Primary navigation">
-            <a href="#about">About</a>
-            <a href="#services">Services</a>
-            <a href="#selected-work">Selected Work</a>
-            <a href="#process">Process</a>
-            <a href="#consultation">Free Quote</a>
-          </nav>
-          <div className="header-actions">
-            <button
-              className="menu-toggle"
-              type="button"
-              aria-expanded={menuOpen}
-              aria-controls="mobile-navigation"
-              aria-label={menuOpen ? "Close navigation" : "Open navigation"}
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-            </button>
-          </div>
-        </header>
-
-        <div
-          id="mobile-navigation"
-          className={menuOpen ? "mobile-nav mobile-nav--open" : "mobile-nav"}
-          aria-hidden={!menuOpen}
-        >
-          <nav aria-label="Mobile navigation">
-            <a href="#about" onClick={() => setMenuOpen(false)}><span>01</span>About</a>
-            <a href="#services" onClick={() => setMenuOpen(false)}><span>02</span>Services</a>
-            <a href="#selected-work" onClick={() => setMenuOpen(false)}><span>03</span>Selected Work</a>
-            <a href="#process" onClick={() => setMenuOpen(false)}><span>04</span>Process</a>
-          </nav>
-          <a className="mobile-nav__quote" href="#consultation" onClick={() => setMenuOpen(false)}>
-            Request a Free Quote <span aria-hidden="true">↗</span>
-          </a>
-        </div>
-
         <div className="hero__copy" ref={copyRef}>
           <h1 id="hero-title" aria-label="We Shape Your Vision">
             <span className="hero__title-line hero__title-line--sans">
