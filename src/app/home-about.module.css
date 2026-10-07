@@ -78,7 +78,7 @@
   height: .62em;
   margin: 0 .16em .03em;
   border-radius: 999px;
-  background: linear-gradient(90deg, #d6c5ae 0 30%, var(--brand) 30% 38%, #262626 38% 62%, #d6c5ae 62% 100%);
+  background: linear-gradient(90deg, #7dafca 0 30%, var(--brand) 30% 38%, #262626 38% 62%, #7dafca 62% 100%);
   vertical-align: baseline;
 }
 
@@ -146,9 +146,10 @@
   }
 
   .title {
-    font-size: clamp(72px, 25vw, 112px);
+    font-size: clamp(58px, 20vw, 96px);
     line-height: .78;
     letter-spacing: -.075em;
+    white-space: nowrap;
   }
 
   .micro {
