@@ -225,12 +225,13 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
             );
           })}
         </div>
+
+        <div className={styles.controls} aria-label="Service carousel controls">
+          <button type="button" onClick={() => step(-1)} disabled={animating} aria-label="Previous service"><ArrowIcon /></button>
+          <button type="button" onClick={() => step(1)} disabled={animating} aria-label="Next service"><ArrowIcon next /></button>
+        </div>
       </div>
 
-      <div className={styles.controls} aria-label="Service carousel controls">
-        <button type="button" onClick={() => step(-1)} disabled={animating} aria-label="Previous service"><ArrowIcon /></button>
-        <button type="button" onClick={() => step(1)} disabled={animating} aria-label="Next service"><ArrowIcon next /></button>
-      </div>
       <span className={styles.srOnly} aria-live="polite">{services[activeIndex]?.title}</span>
     </section>
   );
