@@ -849,3 +849,42 @@
     transition: none;
   }
 }
+
+
+/* Mobile header/menu positioning fixes. */
+@media (max-width: 767px) {
+  .hero .site-header {
+    grid-template-columns: 1fr auto !important;
+    padding: 14px 18px;
+  }
+
+  .header-actions {
+    justify-self: end;
+    width: auto;
+  }
+
+  .menu-toggle {
+    justify-self: end;
+    margin-left: auto;
+  }
+
+  .mobile-nav {
+    position: fixed;
+    z-index: 90;
+    inset: 0;
+    width: 100%;
+    min-height: 100svh;
+    height: 100svh;
+    padding: 108px 18px 24px;
+  }
+
+  .mobile-nav nav {
+    width: 100%;
+  }
+
+  .mobile-nav--open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
