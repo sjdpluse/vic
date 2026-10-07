@@ -512,7 +512,7 @@
 }
 
 .hero__title-line--serif > em {
-  font-family: var(--font-playfair-display), Georgia, "Times New Roman", serif;
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
   font-style: italic;
   font-weight: 400;
   letter-spacing: -.04em;
@@ -672,7 +672,7 @@
     padding: 8px 4px;
     border-bottom: 1px solid rgb(255 255 255 / 14%);
     color: #fff;
-    font-family: var(--font-playfair-display), Georgia, "Times New Roman", serif;
+    font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
     font-size: clamp(31px, 9vw, 44px);
     font-weight: 400;
     letter-spacing: -.035em;
