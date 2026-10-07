@@ -55,6 +55,8 @@ export function HeroSequence() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [profileName, setProfileName] = useState<"desktop" | "mobile">("desktop");
   const [fallbackSrc, setFallbackSrc] = useState("/frames/desktop/frame-0001.jpg");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
 
   const drawPosition = useCallback((position: number) => {
     const canvas = canvasRef.current;
@@ -228,6 +230,66 @@ export function HeroSequence() {
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    let previousY = window.scrollY;
+    let accumulatedDelta = 0;
+    let ticking = false;
+
+    const updateHeader = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - previousY;
+
+      if (menuOpen) {
+        setHeaderHidden(false);
+        accumulatedDelta = 0;
+      } else if (currentY <= 20) {
+        setHeaderHidden(false);
+        accumulatedDelta = 0;
+      } else if (delta !== 0) {
+        if (Math.sign(delta) !== Math.sign(accumulatedDelta)) accumulatedDelta = 0;
+        accumulatedDelta += delta;
+
+        if (accumulatedDelta >= 10) {
+          // Google Labs interaction: scrolling down hides the fixed navigation.
+          setHeaderHidden(true);
+          accumulatedDelta = 0;
+        } else if (accumulatedDelta <= -10) {
+          // Reversing upward reveals it again.
+          setHeaderHidden(false);
+          accumulatedDelta = 0;
+        }
+      }
+
+      previousY = currentY;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateHeader);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!manifest) return;
@@ -409,6 +471,56 @@ export function HeroSequence() {
         background: "#f5f3ed",
       }}
     >
+      <header className={headerHidden && !menuOpen ? "site-header site-header--hidden" : "site-header"}>
+        <div className="header__blur" aria-hidden="true">
+          <span className="header__blur-layer header__blur-layer--1" />
+          <span className="header__blur-layer header__blur-layer--2" />
+          <span className="header__blur-layer header__blur-layer--3" />
+          <span className="header__blur-layer header__blur-layer--4" />
+          <span className="header__blur-layer header__blur-layer--5" />
+        </div>
+        <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
+          <span>VIC PREMIER</span>
+          <small>CONSTRUCTION TEAM</small>
+        </a>
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          <a href="#about">About</a>
+          <a href="#services">Services</a>
+          <a href="#selected-work">Selected Work</a>
+          <a href="#process">Process</a>
+        </nav>
+        <div className="header-actions">
+          <a className="header-quote-link" href="#consultation">
+            <span>Free Quote</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <button
+            className="menu-toggle"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
+            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+
+      <div
+        id="mobile-navigation"
+        className={menuOpen ? "mobile-nav mobile-nav--open" : "mobile-nav"}
+        aria-hidden={!menuOpen}
+      >
+        <nav aria-label="Mobile navigation">
+          <a href="#about" onClick={() => setMenuOpen(false)}><span>01</span>About</a>
+          <a href="#services" onClick={() => setMenuOpen(false)}><span>02</span>Services</a>
+          <a href="#selected-work" onClick={() => setMenuOpen(false)}><span>03</span>Selected Work</a>
+          <a href="#process" onClick={() => setMenuOpen(false)}><span>04</span>Process</a>
+        </nav>
+      </div>
+
       <div
         className="hero__viewport"
         style={{
@@ -424,30 +536,13 @@ export function HeroSequence() {
             "linear-gradient(180deg, #7dafca 0%, #7dafca 52%, #dce6e5 70%, #f5f3ed 82%, #f5f3ed 100%)",
         }}
       >
-        <header className="site-header">
-          <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
-            <span>VIC PREMIER</span>
-            <small>CONSTRUCTION TEAM</small>
-          </a>
-          <nav aria-label="Primary navigation">
-            <a href="#about">About</a>
-            <a href="#services">Services</a>
-            <a href="#selected-work">Selected Work</a>
-            <a href="#process">Process</a>
-          </nav>
-          <a className="icon-cta" href="#consultation">
-            <span>Free quote</span>
-            <span aria-hidden="true">↗</span>
-          </a>
-        </header>
-
         <div className="hero__copy" ref={copyRef}>
-          <h1 id="hero-title">
-            <span className="hero__title-line">
-              <span>Your vision.</span>
+          <h1 id="hero-title" aria-label="We Shape Your Vision">
+            <span className="hero__title-line hero__title-line--sans">
+              <span>We Shape</span>
             </span>{" "}
-            <span className="hero__title-line">
-              <em>Built beautifully.</em>
+            <span className="hero__title-line hero__title-line--serif">
+              <em>Your Vision</em>
             </span>
           </h1>
           <p className="hero__lede">
