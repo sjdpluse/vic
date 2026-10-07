@@ -14,7 +14,7 @@
 
 .heading h2 {
   margin: 0;
-  font-family: var(--font-playfair-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-size: clamp(52px, 6.2vw, 90px);
   font-weight: 400;
   line-height: .94;
