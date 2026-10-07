@@ -71,7 +71,9 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
 
   const measure = useCallback(() => {
     const width = stageRef.current?.clientWidth ?? window.innerWidth;
-    setRadius(width > 1024 ? 2700 : 1650);
+    // Keep the outer visible cards reaching the viewport edges on desktop,
+    // instead of leaving paper-colored gutters at both sides.
+    setRadius(width > 1024 ? Math.max(2700, width * 2.3) : 1650);
   }, []);
 
   useEffect(() => {
