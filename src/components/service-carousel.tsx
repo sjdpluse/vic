@@ -209,7 +209,9 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
                   </div>
                   <div className={styles.content}>
                     <h3>{service.shortTitle}</h3>
-                    <p>{service.summary}</p>
+                    <div className={styles.reveal}>
+                      <p>{service.summary}</p>
+                    </div>
                     <Link
                       href={`/services/${service.slug}`}
                       className={styles.cta}
