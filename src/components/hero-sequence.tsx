@@ -422,8 +422,8 @@ export function HeroSequence() {
 
       // The house owns the full scroll sequence. It keeps renovating and travelling
       // upward while the copy exits in a controlled cascade.
-      const stageStartY = profileName === "mobile" ? 7 : 14;
-      const stageEndY = profileName === "mobile" ? -30 : -22;
+      const stageStartY = profileName === "mobile" ? 1 : 14;
+      const stageEndY = profileName === "mobile" ? -36 : -22;
       const rise = gsap.utils.interpolate(stageStartY, stageEndY, progress);
       const scale = gsap.utils.interpolate(
         0.96,
@@ -503,7 +503,7 @@ export function HeroSequence() {
   const scrollTrackHeight = reducedMotion
     ? "112svh"
     : profileName === "mobile"
-      ? "360svh"
+      ? "320svh"
       : "440svh";
 
   return (
@@ -606,7 +606,7 @@ export function HeroSequence() {
           data-profile={profileName}
           data-renderer="image-sequence"
           style={{
-            top: "18svh",
+            top: profileName === "mobile" ? "10svh" : "18svh",
             width: "104vw",
             maxWidth: "none",
             WebkitMaskImage:
@@ -629,11 +629,11 @@ export function HeroSequence() {
           className="hero__scroll-cue"
           ref={scrollCueRef}
           href="#services"
-          aria-label="Scroll down to Our Services"
+          aria-label="Scroll to renovate and continue to Our Services"
         >
-          <span className="hero__scroll-cue-label">Scroll</span>
-          <span className="hero__scroll-cue-track" aria-hidden="true">
-            <span />
+          <span className="hero__scroll-cue-label">Scroll to Renovate</span>
+          <span className="hero__scroll-cue-beacon" aria-hidden="true">
+            <span className="hero__scroll-cue-arrow" />
           </span>
         </a>
       </div>
