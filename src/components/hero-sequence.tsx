@@ -605,8 +605,8 @@ export function HeroSequence() {
             aria-label="Scroll to renovate and continue to Our Services"
           >
             <span className="hero__scroll-cue-label">Scroll to Renovate</span>
-            <span className="hero__scroll-cue-beacon" aria-hidden="true">
-              <span className="hero__scroll-cue-arrow" />
+            <span className="hero__scroll-cue-track" aria-hidden="true">
+              <span />
             </span>
           </a>
         </div>
