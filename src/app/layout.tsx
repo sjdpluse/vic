@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces } from "next/font/google";
+import { Fraunces, Playfair_Display, REM } from "next/font/google";
 import "./globals.css";
 import "./polish.css";
 import "./hero-brand.css";
@@ -10,6 +10,22 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-fraunces",
+  display: "swap",
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair-display",
+  display: "swap",
+});
+
+const rem = REM({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal"],
+  variable: "--font-rem",
   display: "swap",
 });
 
@@ -27,7 +43,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={fraunces.variable}>
+    <html lang="en" className={`${fraunces.variable} ${playfairDisplay.variable} ${rem.variable}`}>
       <body>{children}</body>
     </html>
   );
