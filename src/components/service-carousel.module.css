@@ -161,8 +161,7 @@
   line-clamp: 3;
 }
 
-.centered .card:hover .reveal,
-.centered .card:focus-within .reveal {
+.centered .reveal {
   max-height: 130px;
   margin: 10px 0 0;
   opacity: 1;
@@ -262,8 +261,7 @@
   .content { min-height: 44%; padding: 38px 32px 32px; }
   .content h3 { font-size: 30px; }
   .content p { font-size: 15px; line-height: 1.48; -webkit-line-clamp: 4; line-clamp: 4; }
-  .centered .card:hover .reveal,
-  .centered .card:focus-within .reveal { max-height: 170px; margin: 12px 0 0; }
+  .centered .reveal { max-height: 170px; margin: 12px 0 0; }
   .cta { padding: 14px 28px; font-size: 16px; }
   .controls { gap: 12px; margin-top: 0; }
 }
