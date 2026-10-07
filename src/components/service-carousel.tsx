@@ -16,9 +16,8 @@ import styles from "./service-carousel.module.css";
 
 type ServiceCarouselProps = { services: ServiceDefinition[] };
 
-const ANGLE_STEP = 10;
-const VISIBLE_ANGLE = 20.1;
-const BUFFER = 4;
+const MOBILE_ANGLE_STEP = 10;
+const DESKTOP_ANGLE_STEP = 6;
 const MOTION_DURATION = 1300;
 const MOTION_STAGGER = 50;
 const MOTION_FAILSAFE = 250;
@@ -56,6 +55,8 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
   const motionTimerRef = useRef<number | null>(null);
   const [position, setPosition] = useState(0);
   const [radius, setRadius] = useState(1650);
+  const [angleStep, setAngleStep] = useState(MOBILE_ANGLE_STEP);
+  const [previewSize, setPreviewSize] = useState(3);
   const [interacting, setInteracting] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [motionDirection, setMotionDirection] = useState<-1 | 0 | 1>(0);
@@ -65,13 +66,24 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
 
   const virtualCards = useMemo(() => {
     if (!services.length) return [] as number[];
-    const start = Math.floor(position) - BUFFER;
-    return Array.from({ length: BUFFER * 2 + 2 }, (_, offset) => start + offset);
-  }, [position, services.length]);
+    const windowSize = previewSize * 2 + 5;
+    const start = Math.floor(position) - Math.floor(windowSize / 2);
+    return Array.from({ length: windowSize }, (_, offset) => start + offset);
+  }, [position, previewSize, services.length]);
 
   const measure = useCallback(() => {
-    const width = stageRef.current?.clientWidth ?? window.innerWidth;
-    setRadius(width > 1024 ? 2700 : 1650);
+    const viewportWidth = window.innerWidth;
+
+    if (viewportWidth > 1024) {
+      setRadius(viewportWidth > 1920 ? 4000 : 4250);
+      setAngleStep(DESKTOP_ANGLE_STEP);
+      setPreviewSize(5);
+      return;
+    }
+
+    setRadius(1650);
+    setAngleStep(MOBILE_ANGLE_STEP);
+    setPreviewSize(3);
   }, []);
 
   useEffect(() => {
@@ -96,13 +108,13 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     setAnimating(true);
     setPosition((current) => Math.round(current) + direction);
 
-    const totalDuration = MOTION_DURATION + (BUFFER * 2 + 1) * MOTION_STAGGER;
+    const totalDuration = MOTION_DURATION + (previewSize * 2 + 4) * MOTION_STAGGER;
     motionTimerRef.current = window.setTimeout(() => {
       setAnimating(false);
       setMotionDirection(0);
       motionTimerRef.current = null;
     }, totalDuration + MOTION_FAILSAFE);
-  }, [animating]);
+  }, [animating, previewSize]);
 
   function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") {
@@ -136,7 +148,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
     if (!drag.active) return;
     const delta = event.clientX - drag.startX;
     if (Math.abs(delta) > 5) drag.moved = true;
-    const pixelsPerCard = Math.max(120, radius * Math.sin((ANGLE_STEP * Math.PI) / 180));
+    const pixelsPerCard = Math.max(120, radius * Math.sin((angleStep * Math.PI) / 180));
     setPosition(drag.startPosition - delta / pixelsPerCard);
   }
 
@@ -176,17 +188,17 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
             const serviceIndex = mod(virtualIndex, services.length);
             const service = services[serviceIndex];
             const relative = virtualIndex - position;
-            const angle = relative * ANGLE_STEP;
+            const angle = relative * angleStep;
             const radians = (angle * Math.PI) / 180;
             const x = radius + radius * Math.sin(radians);
             const y = radius - radius * Math.cos(radians);
-            const visible = Math.abs(angle) <= VISIBLE_ANGLE;
+            const visible = Math.abs(relative) <= previewSize + 0.01;
             const isActive = virtualIndex === activeVirtualIndex;
             const image = serviceImages[service.slug];
             const staggerOrder = motionDirection === 1
-              ? Math.max(0, relative + BUFFER)
+              ? Math.max(0, relative + previewSize)
               : motionDirection === -1
-                ? Math.max(0, BUFFER - relative)
+                ? Math.max(0, previewSize - relative)
                 : 0;
             const style = {
               "--card-x": `${x}px`,
@@ -209,7 +221,9 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
                   </div>
                   <div className={styles.content}>
                     <h3>{service.shortTitle}</h3>
-                    <p>{service.summary}</p>
+                    <div className={styles.reveal}>
+                      <p>{service.summary}</p>
+                    </div>
                     <Link
                       href={`/services/${service.slug}`}
                       className={styles.cta}
@@ -229,6 +243,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
         <button type="button" onClick={() => step(-1)} disabled={animating} aria-label="Previous service"><ArrowIcon /></button>
         <button type="button" onClick={() => step(1)} disabled={animating} aria-label="Next service"><ArrowIcon next /></button>
       </div>
+
       <span className={styles.srOnly} aria-live="polite">{services[activeIndex]?.title}</span>
     </section>
   );

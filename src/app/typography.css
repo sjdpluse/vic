@@ -1,9 +1,9 @@
 :root {
-  --display-font: var(--font-playfair-display), Georgia, "Times New Roman", serif;
+  --display-font: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --display-size: 90px;
 }
 
-/* Keep body copy and controls readable; use Playfair consistently for the site's display typography. */
+/* Keep body copy and controls readable; use Fraunces consistently for the site's display typography. */
 h1,
 h2,
 h3,

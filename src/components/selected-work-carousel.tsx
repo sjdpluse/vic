@@ -541,7 +541,7 @@ export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
   return (
     <section className={styles.section} id="selected-work" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
       <div className={styles.heading}>
-        <h2 id="selected-work-title">Selected Work</h2>
+        <h2 id="selected-work-title">Our Projects</h2>
       </div>
 
       <div className={styles.carouselInner}>
@@ -552,7 +552,7 @@ export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          aria-label="Selected work carousel"
+          aria-label="Our projects carousel"
         >
           {cards.map((card, cardIndex) => {
             const phase = phases[cardIndex] ?? "before";
