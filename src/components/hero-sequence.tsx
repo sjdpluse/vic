@@ -55,6 +55,7 @@ export function HeroSequence() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [profileName, setProfileName] = useState<"desktop" | "mobile">("desktop");
   const [fallbackSrc, setFallbackSrc] = useState("/frames/desktop/frame-0001.jpg");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const drawPosition = useCallback((position: number) => {
     const canvas = canvasRef.current;
@@ -228,6 +229,22 @@ export function HeroSequence() {
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!manifest) return;
@@ -429,25 +446,54 @@ export function HeroSequence() {
             <span>VIC PREMIER</span>
             <small>CONSTRUCTION TEAM</small>
           </a>
-          <nav aria-label="Primary navigation">
+          <nav className="desktop-nav" aria-label="Primary navigation">
             <a href="#about">About</a>
             <a href="#services">Services</a>
             <a href="#selected-work">Selected Work</a>
             <a href="#process">Process</a>
           </nav>
-          <a className="icon-cta" href="#consultation">
-            <span>Free quote</span>
-            <span aria-hidden="true">↗</span>
-          </a>
+          <div className="header-actions">
+            <a className="header-quote" href="#consultation">
+              <span>Free Quote</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+            <button
+              className="menu-toggle"
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-navigation"
+              aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <span aria-hidden="true" />
+              <span aria-hidden="true" />
+            </button>
+          </div>
         </header>
 
+        <div
+          id="mobile-navigation"
+          className={menuOpen ? "mobile-nav mobile-nav--open" : "mobile-nav"}
+          aria-hidden={!menuOpen}
+        >
+          <nav aria-label="Mobile navigation">
+            <a href="#about" onClick={() => setMenuOpen(false)}><span>01</span>About</a>
+            <a href="#services" onClick={() => setMenuOpen(false)}><span>02</span>Services</a>
+            <a href="#selected-work" onClick={() => setMenuOpen(false)}><span>03</span>Selected Work</a>
+            <a href="#process" onClick={() => setMenuOpen(false)}><span>04</span>Process</a>
+          </nav>
+          <a className="mobile-nav__quote" href="#consultation" onClick={() => setMenuOpen(false)}>
+            Request a Free Quote <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
         <div className="hero__copy" ref={copyRef}>
-          <h1 id="hero-title">
-            <span className="hero__title-line">
-              <span>Your vision.</span>
+          <h1 id="hero-title" aria-label="We Shape Your Vision">
+            <span className="hero__title-line hero__title-line--sans">
+              <span>We Shape</span>
             </span>{" "}
-            <span className="hero__title-line">
-              <em>Built beautifully.</em>
+            <span className="hero__title-line hero__title-line--serif">
+              <em>Your Vision</em>
             </span>
           </h1>
           <p className="hero__lede">
