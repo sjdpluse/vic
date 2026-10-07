@@ -56,6 +56,7 @@ export function HeroSequence() {
   const [profileName, setProfileName] = useState<"desktop" | "mobile">("desktop");
   const [fallbackSrc, setFallbackSrc] = useState("/frames/desktop/frame-0001.jpg");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
 
   const drawPosition = useCallback((position: number) => {
     const canvas = canvasRef.current;
@@ -245,6 +246,34 @@ export function HeroSequence() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    let previousY = window.scrollY;
+    let ticking = false;
+
+    const updateHeader = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - previousY;
+
+      if (Math.abs(delta) > 4) {
+        // Google-Labs-style behavior: hide while travelling down the page,
+        // reveal again as soon as the user reverses direction upward.
+        setHeaderHidden(currentY > 72 && delta > 0);
+        previousY = currentY;
+      }
+
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateHeader);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!manifest) return;
@@ -441,7 +470,7 @@ export function HeroSequence() {
             "linear-gradient(180deg, #7dafca 0%, #7dafca 52%, #dce6e5 70%, #f5f3ed 82%, #f5f3ed 100%)",
         }}
       >
-        <header className="site-header">
+        <header className={headerHidden ? "site-header site-header--hidden" : "site-header"}>
           <div className="header__blur" aria-hidden="true">
             <span className="header__blur-layer header__blur-layer--1" />
             <span className="header__blur-layer header__blur-layer--2" />
@@ -458,12 +487,9 @@ export function HeroSequence() {
             <a href="#services">Services</a>
             <a href="#selected-work">Selected Work</a>
             <a href="#process">Process</a>
+            <a href="#consultation">Free Quote</a>
           </nav>
           <div className="header-actions">
-            <a className="header-quote" href="#consultation">
-              <span>Free Quote</span>
-              <span aria-hidden="true">↗</span>
-            </a>
             <button
               className="menu-toggle"
               type="button"
