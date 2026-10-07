@@ -256,7 +256,10 @@ export function HeroSequence() {
       const currentY = window.scrollY;
       const delta = currentY - previousY;
 
-      if (currentY <= 20) {
+      if (menuOpen) {
+        setHeaderHidden(false);
+        accumulatedDelta = 0;
+      } else if (currentY <= 20) {
         setHeaderHidden(false);
         accumulatedDelta = 0;
       } else if (delta !== 0) {
@@ -286,7 +289,7 @@ export function HeroSequence() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!manifest) return;
@@ -468,7 +471,7 @@ export function HeroSequence() {
         background: "#f5f3ed",
       }}
     >
-      <header className={headerHidden ? "site-header site-header--hidden" : "site-header"}>
+      <header className={headerHidden && !menuOpen ? "site-header site-header--hidden" : "site-header"}>
         <div className="header__blur" aria-hidden="true">
           <span className="header__blur-layer header__blur-layer--1" />
           <span className="header__blur-layer header__blur-layer--2" />
@@ -516,9 +519,6 @@ export function HeroSequence() {
           <a href="#selected-work" onClick={() => setMenuOpen(false)}><span>03</span>Selected Work</a>
           <a href="#process" onClick={() => setMenuOpen(false)}><span>04</span>Process</a>
         </nav>
-        <a className="mobile-nav__quote" href="#consultation" onClick={() => setMenuOpen(false)}>
-          Request a Free Quote <span aria-hidden="true">↗</span>
-        </a>
       </div>
 
       <div
