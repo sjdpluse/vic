@@ -187,7 +187,7 @@
   position: absolute;
   z-index: 200;
   left: 50%;
-  bottom: 22px;
+  top: 370px;
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -232,13 +232,13 @@
 @media (min-width: 769px) {
   .stage { height: 620px; }
   .circle { top: 240px; }
-  .controls { bottom: 28px; }
+  .controls { top: 508px; }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
   .stage { height: 500px; }
   .circle { top: 175px; }
-  .controls { bottom: 24px; }
+  .controls { top: 385px; }
 }
 
 @media (min-width: 1025px) {
@@ -250,7 +250,7 @@
   .content p { font-size: 15px; line-height: 1.48; -webkit-line-clamp: 4; line-clamp: 4; }
   .reveal { max-height: 170px; margin-top: 12px; }
   .cta { padding: 14px 28px; font-size: 16px; }
-  .controls { gap: 12px; bottom: 34px; }
+  .controls { gap: 12px; top: 616px; }
 }
 
 @media (max-width: 600px) {
@@ -266,7 +266,7 @@
   }
   .stage { height: 500px; }
   .circle { top: 175px; }
-  .controls { bottom: 20px; }
+  .controls { top: 368px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
