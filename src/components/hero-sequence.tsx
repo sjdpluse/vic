@@ -35,6 +35,7 @@ export function HeroSequence() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
+  const scrollCueRef = useRef<HTMLAnchorElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const loadedRef = useRef(new Map<number, HTMLImageElement>());
   const loadedBySrcRef = useRef(new Map<string, HTMLImageElement>());
@@ -394,6 +395,23 @@ export function HeroSequence() {
 
     animationFrameRef.current = window.requestAnimationFrame(renderLoop);
 
+    const fadeSegment = (
+      progress: number,
+      start: number,
+      end: number,
+      distance: number,
+      blur: number,
+    ) => {
+      const local = gsap.utils.clamp(0, 1, (progress - start) / (end - start));
+      const eased = local * local * (3 - 2 * local);
+
+      return {
+        opacity: 1 - eased,
+        y: -distance * eased,
+        filter: `blur(${blur * eased}px)`,
+      };
+    };
+
     const updateProgress = (progress: number) => {
       const profile = profileRef.current;
       if (!profile) return;
@@ -402,15 +420,44 @@ export function HeroSequence() {
       desiredPositionRef.current = position;
       preloadCorridor(renderedPositionRef.current, position);
 
-      // Keep the current eased frame playback, but let the house physically travel
-      // upward through the viewport as the renovation completes.
-      const stageStartY = profileName === "mobile" ? 7 : 14;
-      const stageEndY = profileName === "mobile" ? -38 : -26;
+      // The house owns the full scroll sequence. It keeps renovating and travelling
+      // upward while the copy exits in a controlled cascade.
+      const stageStartY = profileName === "mobile" ? 1 : 14;
+      const stageEndY = profileName === "mobile" ? -36 : -22;
       const rise = gsap.utils.interpolate(stageStartY, stageEndY, progress);
-      const scale = gsap.utils.interpolate(0.96, profileName === "mobile" ? 1.035 : 1.02, progress);
+      const scale = gsap.utils.interpolate(
+        0.96,
+        profileName === "mobile" ? 1.025 : 1.015,
+        progress,
+      );
       gsap.set(stage, { y: `${rise}svh`, xPercent: -50, scale });
 
-      // The headline stays visible and above the moving house for the full sequence.
+      const lede = copy.querySelector<HTMLElement>(".hero__lede");
+      const cta = copy.querySelector<HTMLElement>(".hero__cta");
+      const vision = copy.querySelector<HTMLElement>(".hero__title-line--serif");
+      const shape = copy.querySelector<HTMLElement>(".hero__title-line--sans");
+      const scrollCue = scrollCueRef.current;
+
+      // Exit order: supporting copy first, then "Your Vision", then "We Shape".
+      const supportingExit = fadeSegment(progress, 0.07, 0.22, profileName === "mobile" ? 28 : 36, 5);
+      const visionExit = fadeSegment(progress, 0.17, 0.35, profileName === "mobile" ? 34 : 46, 4);
+      const shapeExit = fadeSegment(progress, 0.29, 0.48, profileName === "mobile" ? 38 : 52, 3);
+
+      if (lede) gsap.set(lede, supportingExit);
+      if (cta) gsap.set(cta, supportingExit);
+      if (vision) gsap.set(vision, visionExit);
+      if (shape) gsap.set(shape, shapeExit);
+
+      if (scrollCue) {
+        const cueProgress = gsap.utils.clamp(0, 1, progress / 0.12);
+        gsap.set(scrollCue, {
+          opacity: 1 - cueProgress,
+          y: 10 * cueProgress,
+          pointerEvents: cueProgress > 0.85 ? "none" : "auto",
+        });
+      }
+
+      // Keep the copy container itself stable so each child can leave independently.
       gsap.set(copy, { y: 0, opacity: 1 });
     };
 
@@ -456,7 +503,7 @@ export function HeroSequence() {
   const scrollTrackHeight = reducedMotion
     ? "112svh"
     : profileName === "mobile"
-      ? "520svh"
+      ? "320svh"
       : "440svh";
 
   return (
@@ -559,7 +606,7 @@ export function HeroSequence() {
           data-profile={profileName}
           data-renderer="image-sequence"
           style={{
-            top: "18svh",
+            top: profileName === "mobile" ? "10svh" : "18svh",
             width: "104vw",
             maxWidth: "none",
             WebkitMaskImage:
@@ -577,6 +624,18 @@ export function HeroSequence() {
             aria-hidden="true"
           />
         </div>
+
+        <a
+          className="hero__scroll-cue"
+          ref={scrollCueRef}
+          href="#services"
+          aria-label="Scroll to renovate and continue to Our Services"
+        >
+          <span className="hero__scroll-cue-label">Scroll to Renovate</span>
+          <span className="hero__scroll-cue-beacon" aria-hidden="true">
+            <span className="hero__scroll-cue-arrow" />
+          </span>
+        </a>
       </div>
     </section>
   );
