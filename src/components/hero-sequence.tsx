@@ -442,6 +442,13 @@ export function HeroSequence() {
         }}
       >
         <header className="site-header">
+          <div className="header__blur" aria-hidden="true">
+            <span className="header__blur-layer header__blur-layer--1" />
+            <span className="header__blur-layer header__blur-layer--2" />
+            <span className="header__blur-layer header__blur-layer--3" />
+            <span className="header__blur-layer header__blur-layer--4" />
+            <span className="header__blur-layer header__blur-layer--5" />
+          </div>
           <a className="wordmark" href="#hero-title" aria-label="VIC Premier Construction Team home">
             <span>VIC PREMIER</span>
             <small>CONSTRUCTION TEAM</small>
