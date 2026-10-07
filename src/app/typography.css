@@ -17,7 +17,6 @@ h3,
   font-family: var(--display-font) !important;
 }
 
-.hero h1,
 .process__header h2,
 .quote h2 {
   font-size: clamp(58px, 6.25vw, var(--display-size)) !important;
@@ -43,7 +42,6 @@ h3,
 }
 
 @media (max-width: 767px) {
-  .hero h1,
   .process__header h2,
   .quote h2 {
     font-size: clamp(48px, 14vw, 68px) !important;
