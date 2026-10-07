@@ -888,3 +888,25 @@
     pointer-events: auto;
   }
 }
+
+
+/* Scroll-driven hero copy choreography. */
+.hero__lede,
+.hero__cta,
+.hero__title-line--sans,
+.hero__title-line--serif {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__lede,
+  .hero__cta,
+  .hero__title-line--sans,
+  .hero__title-line--serif {
+    filter: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
