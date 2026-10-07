@@ -340,12 +340,16 @@ export function HeroSequence() {
       desiredPositionRef.current = position;
       preloadCorridor(renderedPositionRef.current, position);
 
-      const rise = gsap.utils.interpolate(8, 0, progress);
-      const scale = gsap.utils.interpolate(0.96, 1.015, progress);
+      // Keep the current eased frame playback, but let the house physically travel
+      // upward through the viewport as the renovation completes.
+      const stageStartY = profileName === "mobile" ? 7 : 14;
+      const stageEndY = profileName === "mobile" ? -38 : -26;
+      const rise = gsap.utils.interpolate(stageStartY, stageEndY, progress);
+      const scale = gsap.utils.interpolate(0.96, profileName === "mobile" ? 1.035 : 1.02, progress);
       gsap.set(stage, { y: `${rise}svh`, xPercent: -50, scale });
 
-      const copyFade = progress < 0.52 ? 1 : Math.max(0, 1 - (progress - 0.52) / 0.3);
-      gsap.set(copy, { y: -progress * 34, opacity: copyFade });
+      // The headline stays visible and above the moving house for the full sequence.
+      gsap.set(copy, { y: 0, opacity: 1 });
     };
 
     updateProgress(0);

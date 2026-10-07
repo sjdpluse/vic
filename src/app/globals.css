@@ -58,7 +58,7 @@ a:focus-visible, button:focus-visible {
 .icon-cta { justify-self: end; display: inline-flex; align-items: center; gap: 12px; border-bottom: 1px solid currentColor; padding-bottom: 5px; }
 .hero__copy {
   position: relative;
-  z-index: 10;
+  z-index: 14;
   width: min(900px, calc(100% - 48px));
   margin: 0 auto;
   padding-top: clamp(124px, 15svh, 170px);
