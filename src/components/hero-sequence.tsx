@@ -264,12 +264,12 @@ export function HeroSequence() {
         accumulatedDelta += delta;
 
         if (accumulatedDelta >= 10) {
-          // Requested interaction: scrolling down reveals the header.
-          setHeaderHidden(false);
+          // Google Labs interaction: scrolling down hides the fixed navigation.
+          setHeaderHidden(true);
           accumulatedDelta = 0;
         } else if (accumulatedDelta <= -10) {
-          // Scrolling up hides it softly.
-          setHeaderHidden(true);
+          // Reversing upward reveals it again.
+          setHeaderHidden(false);
           accumulatedDelta = 0;
         }
       }
