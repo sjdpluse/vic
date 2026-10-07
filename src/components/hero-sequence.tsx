@@ -598,6 +598,17 @@ export function HeroSequence() {
           <a className="hero__cta" href="#consultation">
             Request a free quote <span aria-hidden="true">↗</span>
           </a>
+          <a
+            className="hero__scroll-cue"
+            ref={scrollCueRef}
+            href="#services"
+            aria-label="Scroll to renovate and continue to Our Services"
+          >
+            <span className="hero__scroll-cue-label">Scroll to Renovate</span>
+            <span className="hero__scroll-cue-beacon" aria-hidden="true">
+              <span className="hero__scroll-cue-arrow" />
+            </span>
+          </a>
         </div>
 
         <div
@@ -625,17 +636,6 @@ export function HeroSequence() {
           />
         </div>
 
-        <a
-          className="hero__scroll-cue"
-          ref={scrollCueRef}
-          href="#services"
-          aria-label="Scroll to renovate and continue to Our Services"
-        >
-          <span className="hero__scroll-cue-label">Scroll to Renovate</span>
-          <span className="hero__scroll-cue-beacon" aria-hidden="true">
-            <span className="hero__scroll-cue-arrow" />
-          </span>
-        </a>
       </div>
     </section>
   );
