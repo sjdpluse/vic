@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./public-header.module.css";
 
@@ -9,7 +10,16 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
       <a className={styles.skip} href="#main-content">Skip to content</a>
       <header className={`${styles.header} ${overlay ? styles.overlay : ""}`}>
         <Link className={styles.wordmark} href="/" aria-label="VIC Premier Construction Team home">
-          <img className={styles.brandMark} src="/images/vic-premier-logo.webp" alt="" aria-hidden="true" />
+          <Image
+            className={styles.brandMark}
+            src="/images/vic-premier-logo.webp"
+            alt=""
+            aria-hidden="true"
+            width={180}
+            height={120}
+            priority
+            fetchPriority="high"
+          />
           <span className={styles.wordmarkText}>
             <span>VIC PREMIER</span>
             <small>CONSTRUCTION TEAM</small>
