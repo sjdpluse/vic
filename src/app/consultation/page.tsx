@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { FreeQuoteForm } from "@/components/free-quote-form";
 import { PublicFooter } from "@/components/public-footer";
@@ -18,10 +19,14 @@ export default function ConsultationPage() {
       <main id="main-content" className={styles.page}>
         <section className={styles.shell} aria-labelledby="consultation-title">
           <div className={styles.visual}>
-            <img
+            <Image
               src="/images/consultation-builder.webp"
               alt="Builder holding a construction hard hat"
               className={styles.visualImage}
+              fill
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 1050px) 100vw, 42vw"
             />
             <div className={styles.visualShade} aria-hidden="true" />
             <h1 id="consultation-title" className={styles.visualTitle}>
