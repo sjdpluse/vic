@@ -26,7 +26,8 @@ export default function ConsultationPage() {
               fill
               priority
               fetchPriority="high"
-              sizes="(max-width: 1050px) 100vw, 42vw"
+              sizes="(max-width: 900px) 100vw, 50vw"
+              unoptimized
             />
             <div className={styles.visualShade} aria-hidden="true" />
             <h1 id="consultation-title" className={styles.visualTitle}>
@@ -36,14 +37,16 @@ export default function ConsultationPage() {
           </div>
 
           <div className={styles.formPanel}>
-            <div className={styles.formHeader}>
-              <div>
-                <span>Start a project</span>
-                <strong>Project details</strong>
+            <div className={styles.formInner}>
+              <div className={styles.formHeader}>
+                <div>
+                  <span>Start a project</span>
+                  <strong>Project details</strong>
+                </div>
+                <Link href="/" aria-label="Return to VIC Premier home">Close ↗</Link>
               </div>
-              <Link href="/" aria-label="Return to VIC Premier home">Close ↗</Link>
+              <FreeQuoteForm />
             </div>
-            <FreeQuoteForm />
           </div>
         </section>
       </main>
