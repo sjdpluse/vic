@@ -537,7 +537,7 @@ export function HeroSequence() {
           <a href="#process">Process</a>
         </nav>
         <div className="header-actions">
-          <a className="header-quote-link" href="#consultation">
+          <a className="header-quote-link" href="/consultation">
             <span>Free Quote</span>
             <span aria-hidden="true">↗</span>
           </a>
@@ -595,7 +595,7 @@ export function HeroSequence() {
           <p className="hero__lede">
             Residential and commercial work shaped around the property, the scope and the finish.
           </p>
-          <a className="hero__cta" href="#consultation">
+          <a className="hero__cta" href="/consultation">
             Request a free quote <span aria-hidden="true">↗</span>
           </a>
           <a
