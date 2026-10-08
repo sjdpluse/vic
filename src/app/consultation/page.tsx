@@ -11,46 +11,23 @@ export const metadata: Metadata = {
     "Tell VIC Premier Construction Team about your residential or commercial construction, renovation or property improvement project.",
 };
 
-const projectChecklist = [
-  ["01", "Property", "Suburb or postcode and the type of property involved."],
-  ["02", "Scope", "What needs to be built, repaired, restored or renovated."],
-  ["03", "Timing", "When you would ideally like the work to begin."],
-] as const;
-
 export default function ConsultationPage() {
   return (
     <>
       <PublicHeader />
       <main id="main-content" className={styles.page}>
         <section className={styles.shell} aria-labelledby="consultation-title">
-          <div className={styles.intro}>
-            <div className={styles.eyebrow}>Project enquiry / Free quote</div>
-            <h1 id="consultation-title">
-              Tell us about
-              <em> your project.</em>
+          <div className={styles.visual}>
+            <img
+              src="/images/consultation-builder.webp"
+              alt="Builder holding a construction hard hat"
+              className={styles.visualImage}
+            />
+            <div className={styles.visualShade} aria-hidden="true" />
+            <h1 id="consultation-title" className={styles.visualTitle}>
+              <span>Tell us about</span>
+              <em>your project.</em>
             </h1>
-            <p className={styles.lede}>
-              Share the property, scope and timing. Add photos or plans if they help explain the work.
-              VIC Premier will review the details and contact you about the next practical step.
-            </p>
-
-            <div className={styles.checklist} aria-label="Helpful project information">
-              {projectChecklist.map(([index, title, copy]) => (
-                <div className={styles.checkItem} key={index}>
-                  <span>{index}</span>
-                  <div>
-                    <strong>{title}</strong>
-                    <p>{copy}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.direct}>
-              <span>Prefer to speak directly?</span>
-              <a href="tel:+61411786573">0411 786 573 ↗</a>
-              <a href="mailto:vicpremier_constructionteam@yahoo.com">Email VIC Premier ↗</a>
-            </div>
           </div>
 
           <div className={styles.formPanel}>
