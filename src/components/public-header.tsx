@@ -9,8 +9,11 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
       <a className={styles.skip} href="#main-content">Skip to content</a>
       <header className={`${styles.header} ${overlay ? styles.overlay : ""}`}>
         <Link className={styles.wordmark} href="/" aria-label="VIC Premier Construction Team home">
-          <span>VIC PREMIER</span>
-          <small>CONSTRUCTION TEAM</small>
+          <img className={styles.brandMark} src="/images/vic-premier-logo.webp" alt="" aria-hidden="true" />
+          <span className={styles.wordmarkText}>
+            <span>VIC PREMIER</span>
+            <small>CONSTRUCTION TEAM</small>
+          </span>
         </Link>
         <nav className={styles.nav} aria-label="Primary navigation">
           <Link href="/about">About</Link>
