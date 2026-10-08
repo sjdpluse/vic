@@ -18,7 +18,7 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
           <Link href="/#selected-work">Selected Work</Link>
           <Link href="/contact">Contact</Link>
         </nav>
-        <Link className={styles.quote} href="/#consultation">Free quote <span aria-hidden="true">↗</span></Link>
+        <Link className={styles.quote} href="/consultation">Free quote <span aria-hidden="true">↗</span></Link>
         <details className={styles.mobile}>
           <summary aria-label="Open navigation menu">Menu</summary>
           <nav className={styles.panel} aria-label="Mobile navigation">
@@ -29,7 +29,7 @@ export function PublicHeader({ overlay = false }: PublicHeaderProps) {
             <Link href="/#process">Process</Link>
             <Link href="/contact">Contact</Link>
             <Link href="/privacy">Privacy</Link>
-            <Link href="/#consultation">Free quote</Link>
+            <Link href="/consultation">Free quote</Link>
           </nav>
         </details>
       </header>
