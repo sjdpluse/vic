@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HeroSequence } from "@/components/hero-sequence";
 import { HomepageNavBridge } from "@/components/homepage-nav-bridge";
+import { PublicFooter } from "@/components/public-footer";
 import { ServiceCarousel } from "@/components/service-carousel";
 import { SelectedWorkCarousel } from "@/components/selected-work-carousel";
 import { services } from "@/lib/services";
@@ -65,7 +66,7 @@ export default async function Home() {
       <SelectedWorkCarousel cards={selectedWorkCards} />
 
       <section className="process section-shell" id="process" aria-labelledby="process-title"><div className="process__header"><h2 id="process-title">A direct path from enquiry to the next step.</h2></div><div className="process__steps">{process.map(([index,title,copy])=><article key={index}><span>{index}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
-      <footer className="site-footer"><div className="site-footer__brand"><strong>VIC PREMIER</strong><span>CONSTRUCTION TEAM</span></div><div className="site-footer__meta"><span>Melbourne, Victoria</span><span>ABN 25 938 974 580</span><span>6 Windsor St, Hallam VIC 3803</span><Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy</Link></div><a className="site-footer__top" href="#hero-title">Back to top ↑</a></footer>
+      <PublicFooter />
     </main>
   );
 }
