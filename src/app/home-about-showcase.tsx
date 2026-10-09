@@ -88,8 +88,8 @@ export function HomeAboutShowcase({ cards }: HomeAboutShowcaseProps) {
         <p>
           We bring construction, renovation and finishing work together with a clear understanding of the property, the scope and the result you want to achieve.
         </p>
-        <Link className={styles.cta} href="/consultation">
-          Start a Project
+        <Link className={styles.cta} href="/about">
+          Learn more
         </Link>
       </div>
     </section>
