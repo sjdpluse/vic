@@ -13,14 +13,16 @@
 }
 
 .heading h2 {
+  max-width: 781px;
   margin: 0 auto;
-  color: #151515;
-  font-family: var(--font-playfair-display), Georgia, "Times New Roman", serif !important;
-  font-size: clamp(38px, 4.25vw, 68px);
-  font-weight: 400;
-  line-height: .98;
-  letter-spacing: -.052em;
+  color: #323232;
+  font-family: "Google Sans", Helvetica, Arial, sans-serif !important;
+  font-size: clamp(32px, 4.2vw, 60px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.02em;
   text-transform: none;
+  text-wrap: balance;
 }
 
 .stage {
@@ -265,9 +267,9 @@
     margin-bottom: 54px;
   }
   .heading h2 {
-    font-size: clamp(40px, 10.5vw, 58px);
-    line-height: .98;
-    letter-spacing: -.052em;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -.01em;
     white-space: nowrap;
   }
   .stage { height: 350px; }
@@ -282,11 +284,4 @@
   .cardPosition,
   .controls button,
   .cta { transition: none; }
-}
-
-
-@media (max-width: 520px) {
-  .heading h2 {
-    font-size: clamp(36px, 11vw, 48px);
-  }
 }
