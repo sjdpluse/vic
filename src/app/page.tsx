@@ -1,12 +1,11 @@
-import Link from "next/link";
 import { HeroSequence } from "@/components/hero-sequence";
+import { HomeAboutShowcase } from "./home-about-showcase";
 import { HomepageNavBridge } from "@/components/homepage-nav-bridge";
 import { PublicFooter } from "@/components/public-footer";
 import { ServiceCarousel } from "@/components/service-carousel";
 import { SelectedWorkCarousel } from "@/components/selected-work-carousel";
 import { services } from "@/lib/services";
 import { getSelectedWorkCards } from "@/lib/selected-work";
-import aboutStyles from "./home-about.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -43,25 +42,7 @@ export default async function Home() {
       <HomepageNavBridge />
       <ServiceCarousel services={services} />
 
-      <section className={aboutStyles.section} id="about" aria-labelledby="about-title">
-        <div className={aboutStyles.header}>
-          <div className={aboutStyles.titleWrap}>
-            <h2 id="about-title" className={aboutStyles.title}>about us</h2>
-            <div className={aboutStyles.micro} aria-hidden="true"><span>construction</span><span>renovation</span></div>
-          </div>
-          <span className={aboutStyles.star} aria-hidden="true">✦</span>
-        </div>
-
-        <div className={aboutStyles.statementRow}>
-          <p className={aboutStyles.statement}>
-            <span className={aboutStyles.accent}>We renew homes and commercial spaces</span> with a clear idea: every detail should earn its place. <span className={aboutStyles.pill} aria-hidden="true" /> From structure to finish, we bring renovation, painting, roof restoration, gutters, tiling, rendering and carpentry together into <span className={aboutStyles.accent}>spaces that feel resolved, cohesive and distinctly yours.</span>
-          </p>
-        </div>
-
-        <div className={aboutStyles.footer}>
-          <Link className={aboutStyles.link} href="/about">Discover VIC Premier <span aria-hidden="true">↗</span></Link>
-        </div>
-      </section>
+      <HomeAboutShowcase cards={selectedWorkCards} />
 
       <SelectedWorkCarousel cards={selectedWorkCards} />
 
