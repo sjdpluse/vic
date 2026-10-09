@@ -39,15 +39,15 @@
   height: 58px;
   flex: 0 0 auto;
   place-items: center;
-  overflow: hidden;
-  border-radius: 16px;
-  background: #f5f3ed;
+  overflow: visible;
+  background: transparent;
 }
 
 .logo {
-  width: 50px;
+  width: 54px;
   height: auto;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .brandCopy {
@@ -253,6 +253,6 @@
   }
 
   .logo {
-    width: 45px;
+    width: 49px;
   }
 }
