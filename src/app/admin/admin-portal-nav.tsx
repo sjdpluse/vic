@@ -8,6 +8,7 @@ export function AdminPortalNav() {
   const pathname = usePathname();
   const onSelectedWork = pathname === "/admin";
   const onConsultationGallery = pathname.startsWith("/admin/consultation-gallery");
+  const onAboutImage = pathname.startsWith("/admin/about-image");
   const onEnquiries = pathname.startsWith("/admin/enquiries");
   return (
     <div className={styles.wrap}>
@@ -18,6 +19,7 @@ export function AdminPortalNav() {
       <nav className={styles.switcher} aria-label="Admin sections">
         <Link href="/admin" className={onSelectedWork ? styles.active : undefined} aria-current={onSelectedWork ? "page" : undefined}><span className={styles.navIcon} aria-hidden="true">◫</span><span className={styles.navLabel}>Selected Work</span></Link>
         <Link href="/admin/consultation-gallery" className={onConsultationGallery ? styles.active : undefined} aria-current={onConsultationGallery ? "page" : undefined}><span className={styles.navIcon} aria-hidden="true">▣</span><span className={styles.navLabel}>Consultation</span></Link>
+        <Link href="/admin/about-image" className={onAboutImage ? styles.active : undefined} aria-current={onAboutImage ? "page" : undefined}><span className={styles.navIcon} aria-hidden="true">▤</span><span className={styles.navLabel}>About Image</span></Link>
         <Link href="/admin/enquiries" className={onEnquiries ? styles.active : undefined} aria-current={onEnquiries ? "page" : undefined}><span className={styles.navIcon} aria-hidden="true">✉</span><span className={styles.navLabel}>Enquiries</span></Link>
       </nav>
       <Link href="/" className={styles.viewSite} target="_blank" rel="noreferrer">View site <span aria-hidden="true">↗</span></Link>
