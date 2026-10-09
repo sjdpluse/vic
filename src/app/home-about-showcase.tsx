@@ -84,15 +84,12 @@ export function HomeAboutShowcase({ cards }: HomeAboutShowcaseProps) {
 
       <div className={styles.content}>
         <span className={styles.star} aria-hidden="true">✦</span>
-        <h2 id="about-title">
-          <span>If you can <em>dream it</em>, we</span>
-          <span>can <em>build it.</em></span>
-        </h2>
+        <h2 id="about-title">About us</h2>
         <p>
           We bring construction, renovation and finishing work together with a clear understanding of the property, the scope and the result you want to achieve.
         </p>
         <Link className={styles.cta} href="/consultation">
-          Get in touch
+          Start a Project
         </Link>
       </div>
     </section>
