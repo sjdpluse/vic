@@ -6,10 +6,10 @@ import styles from "./site-intro.module.css";
 type IntroPhase = "pre" | "entering" | "leaving";
 
 const hats = [
-  { className: "hat0", delay: "0ms", duration: "8.8s", floatX: "34px", floatY: "42px", floatR: "10deg" },
-  { className: "hat1", delay: "120ms", duration: "10.4s", floatX: "-28px", floatY: "36px", floatR: "-12deg" },
-  { className: "hat2", delay: "220ms", duration: "9.6s", floatX: "-36px", floatY: "-32px", floatR: "11deg" },
-  { className: "hat3", delay: "320ms", duration: "11.2s", floatX: "30px", floatY: "-38px", floatR: "-10deg" },
+  { className: "hat0", delay: "0ms", floatDelay: "-1.4s", duration: "8.8s", floatX: "34px", floatY: "42px", floatR: "10deg" },
+  { className: "hat1", delay: "120ms", floatDelay: "-3.1s", duration: "10.4s", floatX: "-28px", floatY: "36px", floatR: "-12deg" },
+  { className: "hat2", delay: "220ms", floatDelay: "-5.2s", duration: "9.6s", floatX: "-36px", floatY: "-32px", floatR: "11deg" },
+  { className: "hat3", delay: "320ms", floatDelay: "-2.3s", duration: "11.2s", floatX: "30px", floatY: "-38px", floatR: "-10deg" },
 ] as const;
 
 export function SiteIntro() {
@@ -29,10 +29,11 @@ export function SiteIntro() {
       () => setPhase("leaving"),
       reduceMotion ? 700 : 2300,
     );
-    const doneTimer = window.setTimeout(
-      () => setVisible(false),
-      reduceMotion ? 980 : 3050,
-    );
+    const doneTimer = window.setTimeout(() => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      setVisible(false);
+    }, reduceMotion ? 980 : 3050);
 
     return () => {
       window.cancelAnimationFrame(frame);
@@ -43,27 +44,22 @@ export function SiteIntro() {
     };
   }, []);
 
-  useEffect(() => {
-    if (visible) return;
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-  }, [visible]);
-
   if (!visible) return null;
 
   return (
     <div
-      className={`${styles.intro} ${styles[phase]}`}
+      className={`${styles.intro} ${phase === "pre" ? "" : styles[phase]}`}
       aria-hidden="true"
     >
       <div className={styles.hats}>
-        {hats.map((hat, index) => (
+        {hats.map((hat) => (
           <div
             key={hat.className}
             className={`${styles.hat} ${styles[hat.className]}`}
             style={{
               "--hat-delay": hat.delay,
               "--hat-duration": hat.duration,
+              "--hat-float-delay": hat.floatDelay,
               "--hat-float-x": hat.floatX,
               "--hat-float-y": hat.floatY,
               "--hat-float-r": hat.floatR,
