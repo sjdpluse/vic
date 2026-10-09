@@ -418,7 +418,7 @@ export function HeroSequence() {
       const profile = profileRef.current;
       if (!profile) return;
 
-      const position = progress * (profile.frameCount - 1);
+      const progressDelta = progress - lastScrollProgressRef.current;
       const returningToTop = direction < 0 && progress <= 0.002;
 
       if (returningToTop) {
@@ -431,10 +431,15 @@ export function HeroSequence() {
         lastDrawnIndexRef.current = null;
         enqueue(0, true);
         drawPosition(0);
-      } else if (direction >= 0) {
-        // House frames are forward-only. Scrolling upward leaves the last rendered
-        // renovation frame in place instead of driving the sequence in reverse.
-        const forwardPosition = Math.max(desiredPositionRef.current, position);
+      } else if (direction > 0 && progressDelta > 0) {
+        // Only downward travel advances the renovation. Upward travel freezes the
+        // current house frame; reversing downward again immediately continues forward
+        // from that frozen frame instead of waiting for the old scroll position.
+        const forwardDelta = progressDelta * (profile.frameCount - 1);
+        const forwardPosition = Math.min(
+          profile.frameCount - 1,
+          desiredPositionRef.current + forwardDelta,
+        );
         desiredPositionRef.current = forwardPosition;
         preloadCorridor(renderedPositionRef.current, forwardPosition);
       }
