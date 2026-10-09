@@ -1004,3 +1004,143 @@
     opacity: .75;
   }
 }
+
+
+/* Managed transparent hero clouds. Both clouds deliberately sit above the
+   hero copy. Horizontal travel and subtle floating motion are separated across
+   wrapper/image layers so movement stays continuous and fluid. */
+.hero__cloud-track {
+  position: absolute;
+  left: 0;
+  z-index: 40 !important;
+  pointer-events: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.hero__cloud-track--left-to-right {
+  top: clamp(170px, 24svh, 280px);
+  width: clamp(390px, 46vw, 760px);
+  animation: hero-cloud-track-left-to-right 48s linear -13s infinite;
+}
+
+.hero__cloud-track--right-to-left {
+  z-index: 41 !important;
+  top: clamp(112px, 16svh, 190px);
+  width: clamp(330px, 40vw, 650px);
+  animation: hero-cloud-track-right-to-left 54s linear -31s infinite;
+}
+
+.hero__cloud-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.hero__cloud-image--one {
+  opacity: .96;
+  animation: hero-cloud-float-one 9.2s ease-in-out -2.7s infinite alternate;
+}
+
+.hero__cloud-image--two {
+  opacity: .94;
+  animation: hero-cloud-float-two 10.8s ease-in-out -6.1s infinite alternate;
+}
+
+@keyframes hero-cloud-track-left-to-right {
+  from {
+    transform: translate3d(-62vw, 0, 0);
+  }
+  to {
+    transform: translate3d(150vw, 0, 0);
+  }
+}
+
+@keyframes hero-cloud-track-right-to-left {
+  from {
+    transform: translate3d(142vw, 0, 0);
+  }
+  to {
+    transform: translate3d(-68vw, 0, 0);
+  }
+}
+
+@keyframes hero-cloud-float-one {
+  0% {
+    transform: translate3d(0, -7px, 0) rotate(-.5deg) scale(.985);
+  }
+  100% {
+    transform: translate3d(0, 9px, 0) rotate(.55deg) scale(1.015);
+  }
+}
+
+@keyframes hero-cloud-float-two {
+  0% {
+    transform: translate3d(0, 8px, 0) rotate(.45deg) scale(1.012);
+  }
+  100% {
+    transform: translate3d(0, -8px, 0) rotate(-.45deg) scale(.99);
+  }
+}
+
+@media (max-width: 767px) {
+  .hero__cloud-track--left-to-right {
+    top: 25svh;
+    width: clamp(260px, 76vw, 390px);
+    animation-duration: 42s;
+  }
+
+  .hero__cloud-track--right-to-left {
+    top: 15svh;
+    width: clamp(235px, 68vw, 350px);
+    animation-duration: 46s;
+  }
+
+  .hero__cloud-image--one {
+    opacity: .94;
+  }
+
+  .hero__cloud-image--two {
+    opacity: .92;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__cloud-track,
+  .hero__cloud-image {
+    animation: none;
+  }
+
+  .hero__cloud-track--left-to-right {
+    transform: translate3d(12vw, 0, 0);
+  }
+
+  .hero__cloud-track--right-to-left {
+    transform: translate3d(58vw, 0, 0);
+  }
+}
+
+
+/* Force cloud media into the visual foreground of the hero copy while keeping
+   the fixed navigation above it. */
+.hero__copy {
+  z-index: 14 !important;
+}
+
+.hero__cloud-track,
+.hero__cloud-track--left-to-right,
+.hero__cloud-track--right-to-left {
+  isolation: isolate;
+}
+
+.hero__cloud-image {
+  filter: drop-shadow(0 8px 18px rgb(55 86 104 / 5%));
+}

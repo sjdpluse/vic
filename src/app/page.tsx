@@ -7,6 +7,7 @@ import { ServiceCarousel } from "@/components/service-carousel";
 import { SelectedWorkCarousel } from "@/components/selected-work-carousel";
 import { services } from "@/lib/services";
 import { getSelectedWorkCards } from "@/lib/selected-work";
+import { getHeroCloudMedia } from "@/lib/hero-clouds";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,10 @@ const process = [
 ] as const;
 
 export default async function Home() {
-  const selectedWorkCards = await getSelectedWorkCards();
+  const [selectedWorkCards, heroClouds] = await Promise.all([
+    getSelectedWorkCards(),
+    getHeroCloudMedia(),
+  ]);
 
   const localBusiness = {
     "@context": "https://schema.org",
@@ -40,7 +44,7 @@ export default async function Home() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />
       <SiteIntro />
-      <HeroSequence />
+      <HeroSequence clouds={heroClouds} />
       <HomepageNavBridge />
       <ServiceCarousel services={services} />
 
