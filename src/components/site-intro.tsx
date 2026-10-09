@@ -23,17 +23,21 @@ export function SiteIntro() {
 
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.documentElement.dataset.vicIntro = "active";
 
     const frame = window.requestAnimationFrame(() => setPhase("entering"));
-    const leaveTimer = window.setTimeout(
-      () => setPhase("leaving"),
-      reduceMotion ? 700 : 2300,
-    );
+    const leaveTimer = window.setTimeout(() => {
+      document.documentElement.dataset.vicIntro = "revealing";
+      setPhase("leaving");
+    }, reduceMotion ? 700 : 2300);
+
     const doneTimer = window.setTimeout(() => {
       document.documentElement.style.overflow = previousHtmlOverflow;
       document.body.style.overflow = previousBodyOverflow;
+      delete document.documentElement.dataset.vicIntro;
+      delete document.documentElement.dataset.vicIntro;
       setVisible(false);
-    }, reduceMotion ? 980 : 3050);
+    }, reduceMotion ? 980 : 3450);
 
     return () => {
       window.cancelAnimationFrame(frame);
