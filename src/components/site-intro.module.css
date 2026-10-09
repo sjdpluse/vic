@@ -60,6 +60,18 @@
   --hat-enter-x: 30vw;
   --hat-enter-y: -22vh;
   --hat-enter-r: 28deg;
+  --hat-over-x: -18px;
+  --hat-over-y: 14px;
+  --hat-over-r: -2.4deg;
+  --hat-settle-x: 5px;
+  --hat-settle-y: -4px;
+  --hat-settle-r: .7deg;
+  --hat-anticipate-x: -8px;
+  --hat-anticipate-y: 6px;
+  --hat-anticipate-r: -1.2deg;
+  --hat-mid-x: 7vw;
+  --hat-mid-y: -4vh;
+  --hat-mid-r: 5deg;
   --hat-exit-x: 36vw;
   --hat-exit-y: -26vh;
   --hat-exit-r: 30deg;
@@ -72,6 +84,18 @@
   --hat-enter-x: -30vw;
   --hat-enter-y: -18vh;
   --hat-enter-r: -26deg;
+  --hat-over-x: 18px;
+  --hat-over-y: 13px;
+  --hat-over-r: 2.4deg;
+  --hat-settle-x: -5px;
+  --hat-settle-y: -4px;
+  --hat-settle-r: -.7deg;
+  --hat-anticipate-x: 8px;
+  --hat-anticipate-y: 6px;
+  --hat-anticipate-r: 1.2deg;
+  --hat-mid-x: -7vw;
+  --hat-mid-y: -4vh;
+  --hat-mid-r: -5deg;
   --hat-exit-x: -36vw;
   --hat-exit-y: -24vh;
   --hat-exit-r: -30deg;
@@ -84,6 +108,18 @@
   --hat-enter-x: 34vw;
   --hat-enter-y: 22vh;
   --hat-enter-r: 30deg;
+  --hat-over-x: -20px;
+  --hat-over-y: -14px;
+  --hat-over-r: -2.8deg;
+  --hat-settle-x: 5px;
+  --hat-settle-y: 4px;
+  --hat-settle-r: .8deg;
+  --hat-anticipate-x: -8px;
+  --hat-anticipate-y: -6px;
+  --hat-anticipate-r: -1.3deg;
+  --hat-mid-x: 8vw;
+  --hat-mid-y: 5vh;
+  --hat-mid-r: 6deg;
   --hat-exit-x: 40vw;
   --hat-exit-y: 30vh;
   --hat-exit-r: 34deg;
@@ -96,6 +132,18 @@
   --hat-enter-x: -32vw;
   --hat-enter-y: 24vh;
   --hat-enter-r: -30deg;
+  --hat-over-x: 19px;
+  --hat-over-y: -14px;
+  --hat-over-r: 2.8deg;
+  --hat-settle-x: -5px;
+  --hat-settle-y: 4px;
+  --hat-settle-r: -.8deg;
+  --hat-anticipate-x: 8px;
+  --hat-anticipate-y: -6px;
+  --hat-anticipate-r: 1.3deg;
+  --hat-mid-x: -8vw;
+  --hat-mid-y: 5vh;
+  --hat-mid-r: -6deg;
   --hat-exit-x: -38vw;
   --hat-exit-y: 32vh;
   --hat-exit-r: -34deg;
@@ -204,20 +252,20 @@
     opacity: 1;
     transform:
       translate(
-        calc(-50% + var(--hat-enter-x) * -.07),
-        calc(-50% + var(--hat-enter-y) * -.07)
+        calc(-50% + var(--hat-over-x)),
+        calc(-50% + var(--hat-over-y))
       )
       scale(1.035)
-      rotate(calc(var(--hat-enter-r) * -.08));
+      rotate(var(--hat-over-r));
   }
   84% {
     transform:
       translate(
-        calc(-50% + var(--hat-enter-x) * .018),
-        calc(-50% + var(--hat-enter-y) * .018)
+        calc(-50% + var(--hat-settle-x)),
+        calc(-50% + var(--hat-settle-y))
       )
       scale(.992)
-      rotate(calc(var(--hat-enter-r) * .018));
+      rotate(var(--hat-settle-r));
   }
   100% {
     opacity: 1;
@@ -319,21 +367,21 @@
     opacity: 1;
     transform:
       translate(
-        calc(-50% + var(--hat-exit-x) * -.025),
-        calc(-50% + var(--hat-exit-y) * -.025)
+        calc(-50% + var(--hat-anticipate-x)),
+        calc(-50% + var(--hat-anticipate-y))
       )
       scale(1.018)
-      rotate(calc(var(--hat-exit-r) * -.035));
+      rotate(var(--hat-anticipate-r));
   }
   48% {
     opacity: 1;
     transform:
       translate(
-        calc(-50% + var(--hat-exit-x) * .18),
-        calc(-50% + var(--hat-exit-y) * .12)
+        calc(-50% + var(--hat-mid-x)),
+        calc(-50% + var(--hat-mid-y))
       )
       scale(.96)
-      rotate(calc(var(--hat-exit-r) * .18));
+      rotate(var(--hat-mid-r));
   }
   100% {
     opacity: 0;
