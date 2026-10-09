@@ -22,17 +22,6 @@ const MOTION_DURATION = 1300;
 const MOTION_STAGGER = 50;
 const MOTION_FAILSAFE = 250;
 
-const serviceImages: Record<string, { src: string; alt: string }> = {
-  "residential-construction-renovation": { src: "https://images.unsplash.com/photo-1768321916292-ade0ca9c091d?auto=format&fit=crop&w=1400&q=84", alt: "Interior framing during a residential renovation" },
-  "commercial-construction-renovation": { src: "https://images.unsplash.com/photo-1761896171748-ca4e9c81b5de?auto=format&fit=crop&w=1400&q=84", alt: "Commercial construction site with cranes and buildings" },
-  "interior-exterior-painting": { src: "https://images.unsplash.com/photo-1693985120993-e9b203ce7631?auto=format&fit=crop&w=1400&q=84", alt: "Painter applying paint to a wall with a roller" },
-  "roof-restoration": { src: "https://images.unsplash.com/photo-1727637598483-0c139a8fb48f?auto=format&fit=crop&w=1400&q=84", alt: "Residential roof prepared for restoration work" },
-  gutters: { src: "https://images.unsplash.com/photo-1634853982486-c06f0e17940f?auto=format&fit=crop&w=1400&q=84", alt: "Rain gutter installed along a residential roof edge" },
-  tiling: { src: "https://images.unsplash.com/photo-1523413363574-c30aa1c2a516?auto=format&fit=crop&w=1400&q=84", alt: "Hands installing tiles during renovation work" },
-  "wall-rendering": { src: "https://images.unsplash.com/photo-1768839725085-829e6ac7ac26?auto=format&fit=crop&w=1400&q=84", alt: "Hands applying plaster to a wall with trowels" },
-  "general-carpentry": { src: "https://images.unsplash.com/photo-1769353086138-19ee65291a04?auto=format&fit=crop&w=1400&q=84", alt: "Carpenter working with timber in a workshop" },
-};
-
 function mod(value: number, count: number) {
   return ((value % count) + count) % count;
 }
@@ -194,7 +183,6 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
             const y = radius - radius * Math.cos(radians);
             const visible = Math.abs(relative) <= previewSize + 0.01;
             const isActive = virtualIndex === activeVirtualIndex;
-            const image = serviceImages[service.slug];
             const staggerOrder = motionDirection === 1
               ? Math.max(0, relative + previewSize)
               : motionDirection === -1
@@ -217,7 +205,7 @@ export function ServiceCarousel({ services }: ServiceCarouselProps) {
               >
                 <div className={styles.card}>
                   <div className={styles.media}>
-                    {image ? <img src={image.src} alt={image.alt} draggable={false} loading="eager" decoding="async" /> : null}
+                    <img src={service.image} alt={service.imageAlt} draggable={false} loading="eager" decoding="async" />
                   </div>
                   <div className={styles.content}>
                     <h3>{service.shortTitle}</h3>
