@@ -643,20 +643,28 @@ export function HeroSequence({ clouds = [] }: HeroSequenceProps) {
         </div>
 
         {clouds.map((cloud) => (
-          <img
+          <div
             key={cloud.slot}
             className={
               cloud.slot === "left_to_right"
-                ? "hero__cloud hero__cloud--left-to-right"
-                : "hero__cloud hero__cloud--right-to-left"
+                ? "hero__cloud-track hero__cloud-track--left-to-right"
+                : "hero__cloud-track hero__cloud-track--right-to-left"
             }
-            src={cloud.src}
-            alt=""
             aria-hidden="true"
-            loading="eager"
-            decoding="async"
-            draggable={false}
-          />
+          >
+            <img
+              className={
+                cloud.slot === "left_to_right"
+                  ? "hero__cloud-image hero__cloud-image--one"
+                  : "hero__cloud-image hero__cloud-image--two"
+              }
+              src={cloud.src}
+              alt=""
+              loading="eager"
+              decoding="async"
+              draggable={false}
+            />
+          </div>
         ))}
 
         <div
