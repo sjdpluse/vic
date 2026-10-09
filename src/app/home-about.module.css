@@ -13,7 +13,7 @@
 .content {
   position: relative;
   z-index: 3;
-  width: min(100%, 620px);
+  width: min(100%, 781px);
   text-align: center;
 }
 
