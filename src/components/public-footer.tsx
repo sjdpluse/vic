@@ -42,6 +42,7 @@ function Icon({ name }: { name: IconName }) {
 const siteLinks = [
   ["Home", "/"],
   ["About", "/about"],
+  ["Projects", "/#selected-work"],
   ["Free quote", "/consultation"],
   ["Contact", "/contact"],
   ["Privacy", "/privacy"],
