@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { HeroCloudMedia } from "@/lib/hero-clouds";
 import {
   fetchHeroManifest,
   frameSourceCandidates,
@@ -31,7 +32,11 @@ function frameCacheKey(profile: HeroProfile, index: number) {
   return frameSourceCandidates(profile.frames[index]).join("|");
 }
 
-export function HeroSequence() {
+type HeroSequenceProps = {
+  clouds?: HeroCloudMedia[];
+};
+
+export function HeroSequence({ clouds = [] }: HeroSequenceProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
@@ -636,6 +641,23 @@ export function HeroSequence() {
             </span>
           </a>
         </div>
+
+        {clouds.map((cloud) => (
+          <img
+            key={cloud.slot}
+            className={
+              cloud.slot === "left_to_right"
+                ? "hero__cloud hero__cloud--left-to-right"
+                : "hero__cloud hero__cloud--right-to-left"
+            }
+            src={cloud.src}
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            decoding="async"
+            draggable={false}
+          />
+        ))}
 
         <div
           className="hero__stage"
