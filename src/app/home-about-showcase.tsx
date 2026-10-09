@@ -64,7 +64,6 @@ export function HomeAboutShowcase({ cards }: HomeAboutShowcaseProps) {
                 decoding="async"
               />
             ))}
-            <span className={styles.mediaLabel}>Before</span>
           </div>
 
           <div className={styles.media + " " + styles.afterMedia} aria-label="After project images">
@@ -79,7 +78,6 @@ export function HomeAboutShowcase({ cards }: HomeAboutShowcaseProps) {
                 decoding="async"
               />
             ))}
-            <span className={styles.mediaLabel}>After</span>
           </div>
         </>
       ) : null}
@@ -93,8 +91,8 @@ export function HomeAboutShowcase({ cards }: HomeAboutShowcaseProps) {
         <p>
           We bring construction, renovation and finishing work together with a clear understanding of the property, the scope and the result you want to achieve.
         </p>
-        <Link className={styles.cta} href="/about">
-          Discover VIC Premier
+        <Link className={styles.cta} href="/consultation">
+          Get in touch
         </Link>
       </div>
     </section>
