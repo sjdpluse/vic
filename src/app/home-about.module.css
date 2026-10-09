@@ -5,7 +5,7 @@
   place-items: center;
   overflow: hidden;
   border-top: 1px solid rgb(20 20 20 / 7%);
-  background: #fff;
+  background: var(--paper);
   padding: clamp(92px, 9vw, 132px) clamp(250px, 27vw, 470px);
   isolation: isolate;
 }
@@ -37,14 +37,6 @@
   text-wrap: balance;
 }
 
-.content h2 span {
-  display: block;
-}
-
-.content h2 em {
-  font-weight: 400;
-}
-
 .content p {
   width: min(100%, 520px);
   margin: 26px auto 0;
@@ -61,8 +53,8 @@
   justify-content: center;
   margin-top: 27px;
   padding: 0 25px;
-  border: 1px solid #151515;
-  background: #151515;
+  border: 1px solid var(--brand);
+  background: var(--brand);
   color: #fff;
   font-size: 10px;
   font-weight: 600;
@@ -74,8 +66,9 @@
 }
 
 .cta:hover {
-  background: transparent;
-  color: #151515;
+  border-color: #ff1730;
+  background: #ff1730;
+  color: #fff;
   transform: translateY(-2px);
 }
 
