@@ -24,7 +24,7 @@ export default function ContactPage() {
           <article><h2>Email</h2><p><a href="mailto:vicpremier_constructionteam@yahoo.com">vicpremier_constructionteam@yahoo.com</a></p></article>
           <article><h2>Address</h2><p>6 Windsor St, Hallam VIC 3803, Australia</p></article>
           <article><h2>Business</h2><p>VIC PREMIER CONSTRUCTION TEAM<br />ABN 25 938 974 580</p></article>
-          <article><h2>Free quote</h2><p><Link href="/#consultation">Open the project enquiry form ↗</Link></p></article>
+          <article><h2>Free quote</h2><p><Link href="/consultation">Open the project enquiry form ↗</Link></p></article>
         </section>
       </main>
       <PublicFooter />
