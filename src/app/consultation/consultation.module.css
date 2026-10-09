@@ -117,19 +117,22 @@
 }
 
 .formHeader span {
-  color: rgb(20 20 20 / 43%);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .15em;
+  color: rgb(20 20 20 / 46%);
+  font-family: "Google Sans", Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: .1em;
   text-transform: uppercase;
 }
 
 .formHeader strong {
-  font-family: var(--font-playfair-display), Georgia, "Times New Roman", serif;
-  font-size: clamp(34px, 3vw, 48px);
-  font-weight: 400;
-  line-height: .98;
-  letter-spacing: -.045em;
+  font-family: "Google Sans", Helvetica, Arial, sans-serif;
+  font-size: clamp(32px, 3.2vw, 48px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: #323232;
 }
 
 .formHeader > a {
@@ -137,7 +140,9 @@
   padding-bottom: 4px;
   border-bottom: 1px solid currentColor;
   color: rgb(20 20 20 / 62%);
+  font-family: "Google Sans", Helvetica, Arial, sans-serif;
   font-size: 11px;
+  font-weight: 500;
   transition: opacity 180ms ease;
 }
 
@@ -219,7 +224,9 @@
   }
 
   .formHeader strong {
-    font-size: 34px;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -.01em;
   }
 }
 

@@ -46,6 +46,7 @@ export function HeroSequence() {
   const generationRef = useRef(0);
   const desiredPositionRef = useRef(0);
   const renderedPositionRef = useRef(0);
+  const lastScrollProgressRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
   const previousTimestampRef = useRef<number | null>(null);
   const lastDrawnIndexRef = useRef<number | null>(null);
@@ -321,6 +322,7 @@ export function HeroSequence() {
       profileRef.current = profile;
       desiredPositionRef.current = initialPosition;
       renderedPositionRef.current = initialPosition;
+      lastScrollProgressRef.current = 0;
       previousTimestampRef.current = null;
       lastDrawnIndexRef.current = null;
       canvasReadyRef.current = false;
@@ -412,13 +414,37 @@ export function HeroSequence() {
       };
     };
 
-    const updateProgress = (progress: number) => {
+    const updateProgress = (progress: number, direction: number) => {
       const profile = profileRef.current;
       if (!profile) return;
 
-      const position = progress * (profile.frameCount - 1);
-      desiredPositionRef.current = position;
-      preloadCorridor(renderedPositionRef.current, position);
+      const progressDelta = progress - lastScrollProgressRef.current;
+      const returningToTop = direction < 0 && progress <= 0.002;
+
+      if (returningToTop) {
+        // Reset only when the user reaches the beginning of the hero. This is an
+        // immediate snap, never a visible reverse playback, so the next downward
+        // scroll can replay the renovation from the first frame.
+        desiredPositionRef.current = 0;
+        renderedPositionRef.current = 0;
+        previousTimestampRef.current = null;
+        lastDrawnIndexRef.current = null;
+        enqueue(0, true);
+        drawPosition(0);
+      } else if (direction > 0 && progressDelta > 0) {
+        // Only downward travel advances the renovation. Upward travel freezes the
+        // current house frame; reversing downward again immediately continues forward
+        // from that frozen frame instead of waiting for the old scroll position.
+        const forwardDelta = progressDelta * (profile.frameCount - 1);
+        const forwardPosition = Math.min(
+          profile.frameCount - 1,
+          desiredPositionRef.current + forwardDelta,
+        );
+        desiredPositionRef.current = forwardPosition;
+        preloadCorridor(renderedPositionRef.current, forwardPosition);
+      }
+
+      lastScrollProgressRef.current = progress;
 
       // The house owns the full scroll sequence. It keeps renovating and travelling
       // upward while the copy exits in a controlled cascade.
@@ -461,7 +487,7 @@ export function HeroSequence() {
       gsap.set(copy, { y: 0, opacity: 1 });
     };
 
-    updateProgress(0);
+    updateProgress(0, 1);
 
     const trigger = ScrollTrigger.create({
       trigger: section,
@@ -469,7 +495,7 @@ export function HeroSequence() {
       end: "bottom bottom",
       scrub: true,
       invalidateOnRefresh: true,
-      onUpdate: (self) => updateProgress(self.progress),
+      onUpdate: (self) => updateProgress(self.progress, self.direction),
     });
 
     const scheduleBackgroundPreload = () => {

@@ -25,6 +25,20 @@
   text-wrap: balance;
 }
 
+.description {
+  width: min(100%, 820px);
+  margin: 22px auto 0;
+  color: #323232;
+  font-family: "Google Sans", Helvetica, Arial, sans-serif;
+  font-size: clamp(16px, 1.7vw, 24px);
+  font-weight: 400;
+  line-height: 1.38;
+  letter-spacing: 0;
+  text-align: justify;
+  text-align-last: center;
+  text-wrap: pretty;
+}
+
 .carouselInner {
   --inner-width: min(calc(100vw - 48px), 1505px);
   --card-width: min(352px, 100%);
@@ -361,6 +375,16 @@
     line-height: 1.1;
     letter-spacing: -.01em;
     white-space: nowrap;
+  }
+
+  .description {
+    width: min(100%, 92vw);
+    margin-top: 20px;
+    padding-inline: 0;
+    font-size: 16px;
+    line-height: 1.55;
+    text-align: center;
+    text-align-last: auto;
   }
 }
 

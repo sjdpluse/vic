@@ -542,6 +542,9 @@ export function SelectedWorkCarousel({ cards }: SelectedWorkCarouselProps) {
     <section className={styles.section} id="selected-work" aria-labelledby="selected-work-title" onKeyDown={onKeyDown}>
       <div className={styles.heading}>
         <h2 id="selected-work-title">Our Projects</h2>
+        <p className={styles.description}>
+          A selection of completed VIC Premier projects, shown through real before-and-after photography from spaces we have worked on and delivered. See how each project moved from its original condition to the finished result.
+        </p>
       </div>
 
       <div className={styles.carouselInner}>
