@@ -26,16 +26,23 @@
 
 .visualShade {
   position: absolute;
+  z-index: 2;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(0 0 0 / 4%) 28%, rgb(0 0 0 / 58%) 100%),
-    linear-gradient(90deg, rgb(0 0 0 / 12%), transparent 54%);
+    linear-gradient(
+      to top,
+      rgb(240 4 28 / 92%) 0%,
+      rgb(240 4 28 / 76%) 17%,
+      rgb(240 4 28 / 46%) 32%,
+      rgb(240 4 28 / 16%) 48%,
+      rgb(240 4 28 / 0%) 66%
+    );
   pointer-events: none;
 }
 
 .visualTitle {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   left: clamp(34px, 4vw, 72px);
   right: clamp(34px, 4vw, 72px);
   bottom: clamp(42px, 6vw, 88px);
