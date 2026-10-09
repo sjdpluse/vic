@@ -1,4 +1,5 @@
 import { HeroSequence } from "@/components/hero-sequence";
+import { SiteIntro } from "@/components/site-intro";
 import { HomeAboutShowcase } from "./home-about-showcase";
 import { HomepageNavBridge } from "@/components/homepage-nav-bridge";
 import { PublicFooter } from "@/components/public-footer";
@@ -38,6 +39,7 @@ export default async function Home() {
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />
+      <SiteIntro />
       <HeroSequence />
       <HomepageNavBridge />
       <ServiceCarousel services={services} />
