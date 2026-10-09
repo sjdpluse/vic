@@ -1006,10 +1006,35 @@
 }
 
 
-/* Managed transparent hero clouds. The first travels above the house but below
-   the copy; the second crosses the copy layer for a more dimensional scene. */
-.hero__cloud {
+/* Managed transparent hero clouds. Both clouds deliberately sit above the
+   hero copy. Horizontal travel and subtle floating motion are separated across
+   wrapper/image layers so movement stays continuous and fluid. */
+.hero__cloud-track {
   position: absolute;
+  left: 0;
+  z-index: 18;
+  pointer-events: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.hero__cloud-track--left-to-right {
+  top: clamp(170px, 24svh, 280px);
+  width: clamp(390px, 46vw, 760px);
+  animation: hero-cloud-track-left-to-right 48s linear -13s infinite;
+}
+
+.hero__cloud-track--right-to-left {
+  z-index: 19;
+  top: clamp(112px, 16svh, 190px);
+  width: clamp(330px, 40vw, 650px);
+  animation: hero-cloud-track-right-to-left 54s linear -31s infinite;
+}
+
+.hero__cloud-image {
+  display: block;
+  width: 100%;
   height: auto;
   object-fit: contain;
   pointer-events: none;
@@ -1020,80 +1045,85 @@
   -webkit-backface-visibility: hidden;
 }
 
-.hero__cloud--left-to-right {
-  z-index: 8;
-  top: clamp(230px, 31svh, 350px);
-  left: 0;
-  width: clamp(260px, 30vw, 540px);
-  opacity: .9;
-  animation: hero-cloud-left-to-right 34s linear -8s infinite;
+.hero__cloud-image--one {
+  opacity: .82;
+  animation: hero-cloud-float-one 9.2s ease-in-out -2.7s infinite alternate;
 }
 
-.hero__cloud--right-to-left {
-  z-index: 16;
-  top: clamp(122px, 18svh, 205px);
-  left: 0;
-  width: clamp(220px, 24vw, 430px);
-  opacity: .76;
-  animation: hero-cloud-right-to-left 39s linear -19s infinite;
+.hero__cloud-image--two {
+  opacity: .72;
+  animation: hero-cloud-float-two 10.8s ease-in-out -6.1s infinite alternate;
 }
 
-@keyframes hero-cloud-left-to-right {
+@keyframes hero-cloud-track-left-to-right {
+  from {
+    transform: translate3d(-62vw, 0, 0);
+  }
+  to {
+    transform: translate3d(150vw, 0, 0);
+  }
+}
+
+@keyframes hero-cloud-track-right-to-left {
+  from {
+    transform: translate3d(142vw, 0, 0);
+  }
+  to {
+    transform: translate3d(-68vw, 0, 0);
+  }
+}
+
+@keyframes hero-cloud-float-one {
   0% {
-    transform: translate3d(-42vw, 2px, 0) scale(.94);
-  }
-  35% {
-    transform: translate3d(18vw, -7px, 0) scale(.98);
-  }
-  68% {
-    transform: translate3d(76vw, 5px, 0) scale(1);
+    transform: translate3d(0, -7px, 0) rotate(-.5deg) scale(.985);
   }
   100% {
-    transform: translate3d(145vw, -2px, 0) scale(.96);
+    transform: translate3d(0, 9px, 0) rotate(.55deg) scale(1.015);
   }
 }
 
-@keyframes hero-cloud-right-to-left {
+@keyframes hero-cloud-float-two {
   0% {
-    transform: translate3d(130vw, -3px, 0) scale(.94);
-  }
-  38% {
-    transform: translate3d(76vw, 7px, 0) scale(.98);
-  }
-  72% {
-    transform: translate3d(22vw, -5px, 0) scale(1);
+    transform: translate3d(0, 8px, 0) rotate(.45deg) scale(1.012);
   }
   100% {
-    transform: translate3d(-48vw, 2px, 0) scale(.95);
+    transform: translate3d(0, -8px, 0) rotate(-.45deg) scale(.99);
   }
 }
 
 @media (max-width: 767px) {
-  .hero__cloud--left-to-right {
-    top: 39svh;
-    width: clamp(180px, 55vw, 280px);
-    opacity: .82;
-    animation-duration: 29s;
+  .hero__cloud-track--left-to-right {
+    top: 25svh;
+    width: clamp(260px, 76vw, 390px);
+    animation-duration: 42s;
   }
 
-  .hero__cloud--right-to-left {
-    top: 17svh;
-    width: clamp(160px, 48vw, 240px);
-    opacity: .68;
-    animation-duration: 33s;
+  .hero__cloud-track--right-to-left {
+    top: 15svh;
+    width: clamp(235px, 68vw, 350px);
+    animation-duration: 46s;
+  }
+
+  .hero__cloud-image--one {
+    opacity: .76;
+  }
+
+  .hero__cloud-image--two {
+    opacity: .67;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__cloud {
+  .hero__cloud-track,
+  .hero__cloud-image {
     animation: none;
   }
 
-  .hero__cloud--left-to-right {
-    transform: translate3d(14vw, 0, 0) scale(.96);
+  .hero__cloud-track--left-to-right {
+    transform: translate3d(12vw, 0, 0);
   }
 
-  .hero__cloud--right-to-left {
-    transform: translate3d(61vw, 0, 0) scale(.96);
+  .hero__cloud-track--right-to-left {
+    transform: translate3d(58vw, 0, 0);
   }
 }
