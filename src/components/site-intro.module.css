@@ -77,7 +77,7 @@
 }
 
 .entering .hatFloat {
-  animation: intro-hat-float var(--hat-duration) ease-in-out calc(var(--hat-delay) * -1) infinite alternate;
+  animation: intro-hat-float var(--hat-duration) ease-in-out var(--hat-float-delay) infinite alternate;
 }
 
 .copy {
