@@ -153,8 +153,14 @@
   }
 
   .switcher a {
+    min-width: 42px;
     min-height: 38px;
-    padding: 0 12px;
+    justify-content: center;
+    padding: 0 10px;
     font-size: 11px;
+  }
+
+  .navLabel {
+    display: none;
   }
 }

@@ -47,7 +47,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
         <div className={styles.copy}>
           <p>{service.detail}</p>
           <p>Send the property location, the work you need and any useful photos or plans through the free quote form. VIC Premier can then review the information and arrange the next practical step.</p>
-          <Link className={styles.cta} href="/#consultation">Start a project ↗</Link>
+          <Link className={styles.cta} href="/consultation">Start a project ↗</Link>
         </div>
       </section>
       <nav className={styles.serviceNav} aria-label="Other services">

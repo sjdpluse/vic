@@ -1,0 +1,41 @@
+.gallery {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #d9d9d9;
+}
+
+.slide {
+  position: absolute;
+  inset: -1px;
+  display: block;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  object-fit: cover;
+  object-position: center 46%;
+  opacity: 0;
+  transform: scale(1.035);
+  transition:
+    opacity 1.15s cubic-bezier(.22, 1, .36, 1),
+    transform 6.4s cubic-bezier(.16, 1, .3, 1);
+  will-change: opacity, transform;
+}
+
+.active {
+  z-index: 1;
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (max-width: 640px) {
+  .slide {
+    object-position: center 43%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transition: none;
+    transform: none;
+  }
+}
